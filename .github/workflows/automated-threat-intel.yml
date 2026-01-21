@@ -11,12 +11,15 @@ jobs:
   run_pipeline:
     runs-on: ubuntu-latest
 
+    env:
+      NTIA_KEY: ${{ secrets.NTIA_Key }}  # token for HTTPS push
+
     steps:
-      # 1️⃣ Checkout repository and allow pushing using GITHUB_TOKEN
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          persist-credentials: true   # ✅ this fixes 403 push errors
+          persist-credentials: false   # avoid HTTPS token conflict
 
       # 2️⃣ Setup Python
       - name: Set up Python
@@ -30,21 +33,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4️⃣ Run the pipeline
+      # 4️⃣ Run NTIA pipeline
       - name: Run NTIA pipeline
         run: python -m src.run
 
-      # 5️⃣ Commit updated files (README + build/outputs)
+      # 5️⃣ Commit updated files
       - name: Commit & push updates
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          # Stage all relevant changes
+          # Stage all updated files
           git add README.md build outputs
 
           # Commit only if there are changes
           git diff --cached --quiet || git commit -m "Automated update: pipeline outputs + README"
 
-          # Push back to main branch
-          git push
+          # Push using the NTIA_Key token
+          git push https://$NTIA_KEY@github.com/DRA3V50/Network-Threat-Intelligence-Analysis.git main
