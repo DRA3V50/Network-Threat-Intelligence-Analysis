@@ -1,32 +1,21 @@
-name: Automated Threat Intelligence Pipeline
+name: Daily Threat Intelligence Pipeline
 
 on:
   schedule:
-    - cron: "0 13,1 * * *"   # 08:00 & 20:00 EST
+    - cron: "0 13 * * *"   # 8 AM EST
+    - cron: "0 1 * * *"    # 8 PM EST
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-
-      - name: Set git identity
-        run: |
-          git config user.name "DRA3V50 Bot"
-          git config user.email "automation@github.local"
-          git remote set-url origin git@github.com:DRA3V50/Network-Threat-Intelligence-Analysis.git
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -35,16 +24,16 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt pytz scapy matplotlib pandas seaborn
+          pip install matplotlib
 
-      - name: Run threat intelligence pipeline
-        run: python run.py
-
-      - name: Update README snapshot
-        run: python scripts/update_readme.py
-
-      - name: Commit and push updates
+      - name: Run pipeline
         run: |
+          python src/run.py
+
+      - name: Commit updates
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
           git add -f build outputs README.md
-          git commit -m "Automated threat intel update (EST scheduled)" || exit 0
-          git push origin main
+          git commit -m "Automated threat intel update" || echo "No changes"
+          git push
