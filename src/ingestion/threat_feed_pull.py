@@ -1,24 +1,44 @@
 import csv
-import os
+import random
+from pathlib import Path
 
-FEED_URL = "https://example.com/iocs.csv"  # placeholder
 
-def pull_osint_iocs(output_path="build/iocs/osint_iocs.csv"):
+def pull_osint_iocs(output_dir: Path, count: int = 50):
     """
-    Pulls OSINT IOCs and saves to a CSV.
-    Creates build/iocs folder if missing.
-    Returns list of IOCs.
+    Generate simulated OSINT Indicators of Compromise
     """
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-    # For demo: generate a sample IOC
-    iocs = [{"IOC": "1.2.3.4", "Type": "IP"}]
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_file = output_dir / "osint_iocs.csv"
 
-    # Save to CSV
-    with open(output_path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["IOC", "Type"])
-        writer.writeheader()
-        writer.writerows(iocs)
+    ioc_types = ["IP", "DOMAIN", "URL", "HASH"]
 
-    print(f"[+] OSINT IOCs saved to {output_path}")
-    return iocs
+    with open(output_file, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            "ioc_type",
+            "ioc_value",
+            "confidence",
+            "source"
+        ])
+
+        for _ in range(count):
+            ioc_type = random.choice(ioc_types)
+
+            if ioc_type == "IP":
+                value = f"185.{random.randint(1,254)}.{random.randint(1,254)}.{random.randint(1,254)}"
+            elif ioc_type == "DOMAIN":
+                value = f"malicious{random.randint(100,999)}.com"
+            elif ioc_type == "URL":
+                value = f"http://bad{random.randint(100,999)}.example/path"
+            else:
+                value = f"{random.getrandbits(128):032x}"
+
+            writer.writerow([
+                ioc_type,
+                value,
+                random.randint(60, 95),
+                "OSINT-SIM"
+            ])
+
+    print(f"[+] OSINT IOCs written to {output_file}")
