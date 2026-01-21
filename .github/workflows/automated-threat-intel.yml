@@ -1,6 +1,6 @@
 name: Automated Threat Intelligence Pipeline
 
-# Trigger workflow twice daily and on manual trigger
+# Trigger: manual or schedule (twice daily)
 on:
   schedule:
     - cron: '0 6,18 * * *'   # 06:00 and 18:00 UTC ~ 1 AM & 1 PM EST
@@ -32,16 +32,22 @@ jobs:
         run: |
           python run.py
 
-      # 5️⃣ Upload outputs folder as artifact
-      - name: Upload outputs
-        uses: actions/upload-artifact@v4
-        with:
-          name: threat-intel-outputs
-          path: outputs/
+      # 5️⃣ Update README with timestamp
+      - name: Update README last updated timestamp
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          echo "## Last Pipeline Update: $TIMESTAMP" > last_update.md
+          # Insert into README.md
+          sed -i '/## Last Pipeline Update:/d' README.md
+          cat last_update.md >> README.md
 
-      # 6️⃣ Upload build folder (optional, contains dynamic CSV/PCAP data)
-      - name: Upload build folder
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-data
-          path: build/
+      # 6️⃣ Commit and push generated files back to repo
+      - name: Commit outputs and build back to repository
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add build/ outputs/ README.md
+          git commit -m "Update outputs, build, and README from workflow" || echo "Nothing to commit"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
