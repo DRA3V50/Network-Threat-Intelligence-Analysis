@@ -1,29 +1,27 @@
 name: Automated Threat Intelligence Pipeline
 
 on:
+  push:
+    branches:
+      - main
   schedule:
-    # Run twice daily at 10:00 UTC and 22:00 UTC (adjust for EST if needed)
-    - cron: '0 15,3 * * *'
-  workflow_dispatch:  # manual trigger
+    # Runs twice daily at 00:00 and 12:00 UTC
+    - cron: '0 0,12 * * *'
 
 jobs:
   run_pipeline:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
-      # Step 1: Checkout repository via SSH
+      # Step 1: Checkout your repository
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          persist-credentials: false  # do not use default token, force SSH
 
-      # Step 2: Setup Python
+      # Step 2: Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.13'
+          python-version: 3.13
 
       # Step 3: Install dependencies
       - name: Install dependencies
@@ -31,28 +29,28 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 4: Generate missing data and run pipeline
-      - name: Run pipeline
-        run: |
-          python run.py
-
-      # Step 5: Configure SSH for pushing
-      - name: Setup SSH
+      # Step 4: Set up SSH key for pushing back to repo
+      - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan github.com >> ~/.ssh/known_hosts
+      - name: Set git to use SSH
+        run: git remote set-url origin git@github.com:DRA3V50/Network-Threat-Intelligence-Analysis.git
 
-      # Step 6: Commit and push updated outputs + README
-      - name: Commit and push outputs
+      # Step 5: Run the Python pipeline
+      - name: Run threat intelligence pipeline
+        run: python run.py
+
+      # Step 6: Add and commit updated outputs
+      - name: Commit pipeline outputs
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add -f build/ outputs/ README.md
-          git commit -m "Automated update: pipeline outputs + README" || echo "Nothing to commit"
-          git push git@github.com:DRA3V50/Network-Threat-Intelligence-Analysis.git main
+          git add build README.md outputs
+          git commit -m "Automated update: pipeline outputs + README" || echo "No changes to commit"
 
-      # Step 7: Print completion
-      - name: Finished
-        run: echo "✅ Pipeline completed and updates pushed!"
+      # Step 7: Push updates back to main branch
+      - name: Push changes
+        run: git push origin main
