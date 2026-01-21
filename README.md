@@ -71,3 +71,33 @@ _Last updated: **2026-01-20 22:36 EST**_
 - **OSINT IOCs loaded:** 50
 - **PCAP regenerated:** Yes
 - **High-Risk Findings:** Updated
+
+<!-- DAILY_ANALYSIS_START -->
+
+## 📊 Daily Analysis Snapshot
+
+> This section is dynamically updated by automated workflows.
+
+### **Daily Automated Threat Intelligence Update** (2026-01-21 04:15 UTC)
+
+- **Vulnerabilities loaded:** 1
+- **OSINT IOCs loaded:** 1
+- **Sample PCAP generated:** Yes
+- **Top Source IPs:** 0
+- **High-Risk Vulnerabilities:** 0
+
+*This summary is auto-generated.*
+
+### **Generated Files and Outputs**
+
+#### **Reports:**
+- **[Matched IOCs CSV](outputs/reports/matched_iocs.csv)**
+- **[High-Risk Vulnerabilities CSV](outputs/reports/high_risk_vulns.csv)**
+- **[Analysis Summary MD](outputs/reports/analysis_summary.md)**
+
+#### **Chart:**
+
+#### **Logs:**
+- **[Top Source IPs CSV](outputs/logs/top_source_ips.csv)**
+
+<!-- DAILY_ANALYSIS_END -->
