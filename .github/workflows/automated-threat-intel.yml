@@ -2,13 +2,14 @@ name: Automated Threat Intelligence Pipeline
 
 on:
   schedule:
-    # Runs twice daily at 08:00 and 20:00 EST
-    - cron: '0 13,1 * * *'  # GitHub Actions uses UTC, so EST = UTC-5
-  workflow_dispatch:  # allows manual trigger
+    # Twice daily at 08:00 and 20:00 EST (UTC-5)
+    - cron: '0 13,1 * * *'
+  workflow_dispatch:  # manual trigger
 
 jobs:
   run_pipeline:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,29 +24,41 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run threat intelligence pipeline
+      - name: Prepare directories
         run: |
-          python run.py
+          mkdir -p build/iocs build/pcaps build/vulnerabilities
+          mkdir -p outputs/charts outputs/logs outputs/reports
 
-      - name: Update README placeholders
+      - name: Run threat intelligence pipeline
+        run: python run.py
+
+      - name: Update README placeholders & top IPs table
         run: |
           TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
-          VULN_COUNT=$(wc -l < build/vulnerabilities/vuln_scan_sample.csv)
-          IOC_COUNT=$(wc -l < build/iocs/osint_iocs.csv)
-          TOP_IP_COUNT=$(wc -l < outputs/logs/top_source_ips.csv)
-          HIGH_RISK_COUNT=$(wc -l < outputs/reports/high_risk_vulns.csv)
+          VULN_COUNT=$( [ -f build/vulnerabilities/vuln_scan_sample.csv ] && wc -l < build/vulnerabilities/vuln_scan_sample.csv || echo 0 )
+          IOC_COUNT=$( [ -f build/iocs/osint_iocs.csv ] && wc -l < build/iocs/osint_iocs.csv || echo 0 )
+          TOP_IP_COUNT=$( [ -f outputs/logs/top_source_ips.csv ] && wc -l < outputs/logs/top_source_ips.csv || echo 0 )
+          HIGH_RISK_COUNT=$( [ -f outputs/reports/high_risk_vulns.csv ] && wc -l < outputs/reports/high_risk_vulns.csv || echo 0 )
 
-          # Replace placeholders in README.md
+          # Replace placeholders in README
           sed -i "s/{{TIMESTAMP}}/$TIMESTAMP/" README.md
           sed -i "s/{{VULN_COUNT}}/$VULN_COUNT/" README.md
           sed -i "s/{{IOC_COUNT}}/$IOC_COUNT/" README.md
           sed -i "s/{{TOP_IP_COUNT}}/$TOP_IP_COUNT/" README.md
           sed -i "s/{{HIGH_RISK_COUNT}}/$HIGH_RISK_COUNT/" README.md
 
+          # Generate Top IPs Markdown table (10 rows max)
+          if [ -f outputs/logs/top_source_ips.csv ]; then
+            echo -e "\n### Top Source IPs\n| IP | Count |\n|----|-------|" > top_ips.md
+            head -n 10 outputs/logs/top_source_ips.csv | awk -F, '{print "|"$1"|"$2"|"}' >> top_ips.md
+            # Replace placeholder in README
+            sed -i '/<!--TOP_IPS_TABLE-->/r top_ips.md' README.md
+          fi
+
       - name: Commit updated outputs and README
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add README.md build/ outputs/
-          git commit -m "Automated update: pipeline outputs + README"
-          git push origin main || echo "Nothing to push"
+          git commit -m "Automated update: pipeline outputs + README" || echo "Nothing to commit"
+          git push origin main
