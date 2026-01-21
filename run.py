@@ -1,3 +1,19 @@
+import shutil
+import os
+
+print("[+] Cleaning old generated data...")
+
+for path in ["build", "outputs"]:
+    if os.path.exists(path):
+        shutil.rmtree(path)
+
+os.makedirs("build/iocs", exist_ok=True)
+os.makedirs("build/pcaps", exist_ok=True)
+os.makedirs("build/vulnerabilities", exist_ok=True)
+os.makedirs("outputs/charts", exist_ok=True)
+os.makedirs("outputs/logs", exist_ok=True)
+os.makedirs("outputs/reports", exist_ok=True)
+
 from src.ingestion.threat_feed_pull import pull_osint_iocs
 from src.analysis.pcap_parser import parse_pcap
 from src.analysis.ioc_correlation import correlate_iocs
