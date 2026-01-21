@@ -1,20 +1,34 @@
-name: Automated Threat Intelligence Pipeline
+name: Network Threat Intelligence Pipeline
 
 on:
-  schedule:
-    - cron: "0 14,2 * * *"   # 09:00 & 21:00 EST (UTC-based)
   workflow_dispatch:
+  schedule:
+    # 07:00 and 19:00 EST (12:00 / 00:00 UTC)
+    - cron: "0 12,0 * * *"
 
 permissions:
   contents: write
 
 jobs:
-  pipeline:
+  run-pipeline:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # SSH key for pushing commits
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Configure git
+        run: |
+          git config user.name "actions-user"
+          git config user.email "actions@github.com"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -23,20 +37,31 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pandas matplotlib scapy requests
+          pip install pandas requests scapy tabulate
 
-      - name: Run threat intelligence pipeline
+      # Ensure required directories exist
+      - name: Prepare output directories
+        run: |
+          mkdir -p outputs/logs
+          mkdir -p build/iocs build/pcaps build/vulnerabilities
+
+      # Run main pipeline
+      - name: Run analysis pipeline
         run: |
           python -m src.run
 
+      # Update README from outputs/logs/high_risk_vulns.csv
       - name: Update README
         run: |
           python scripts/update_readme.py
 
-      - name: Commit and push results
+      # Commit only if changes exist
+      - name: Commit and push changes
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add .
-          git commit -m "Automated update: pipeline outputs + README" || exit 0
-          git push
+          if git status --porcelain | grep .; then
+            git add README.md outputs build
+            git commit -m "Automated update: pipeline outputs + README"
+            git push origin main
+          else
+            echo "No changes to commit"
+          fi
