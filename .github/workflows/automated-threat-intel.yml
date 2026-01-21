@@ -1,7 +1,7 @@
 name: NTIA Pipeline
 
 on:
-  # Schedule: 08:00 and 20:00 EST → 13:00 and 01:00 UTC
+  # Twice daily EST → converted to UTC
   schedule:
     - cron: "0 13 * * *"   # 08:00 EST
     - cron: "0 1 * * *"    # 20:00 EST
@@ -12,14 +12,14 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      NTIA_KEY: ${{ secrets.NTIA_Key }}  # token for HTTPS push
+      NTIA_KEY: ${{ secrets.NTIA_Key }}  # classic token for HTTPS push
 
     steps:
       # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          persist-credentials: false   # avoid HTTPS token conflict
+          persist-credentials: false   # force HTTPS token usage
 
       # 2️⃣ Setup Python
       - name: Set up Python
@@ -33,21 +33,26 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4️⃣ Run NTIA pipeline
+      # 4️⃣ Run NTIA pipeline to generate build files
       - name: Run NTIA pipeline
         run: python -m src.run
 
-      # 5️⃣ Commit updated files
-      - name: Commit & push updates
+      # 5️⃣ Run README update script
+      - name: Update README
+        run: python src/scripts/update_readme.py
+
+      # 6️⃣ Commit & push updates (force-add outputs in case of .gitignore)
+      - name: Commit & push changes
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          # Stage all updated files
-          git add README.md build outputs
+          # Stage all updated files, force-add outputs if ignored
+          git add README.md build outputs -f
 
           # Commit only if there are changes
           git diff --cached --quiet || git commit -m "Automated update: pipeline outputs + README"
 
-          # Push using the NTIA_Key token
+          # Push to main branch using token
           git push https://$NTIA_KEY@github.com/DRA3V50/Network-Threat-Intelligence-Analysis.git main
+
