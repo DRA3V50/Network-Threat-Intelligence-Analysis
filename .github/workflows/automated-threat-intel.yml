@@ -2,12 +2,8 @@ name: Automated Threat Intelligence Pipeline
 
 on:
   schedule:
-    # Runs twice daily (EST-safe, UTC times)
-    - cron: "0 8,20 * * *"
+    - cron: "0 13,1 * * *"   # 08:00 & 20:00 EST
   workflow_dispatch:
-
-permissions:
-  contents: write
 
 jobs:
   run-pipeline:
@@ -16,39 +12,39 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Set up Python
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Set git identity
+        run: |
+          git config user.name "DRA3V50 Bot"
+          git config user.email "automation@github.local"
+          git remote set-url origin git@github.com:DRA3V50/Network-Threat-Intelligence-Analysis.git
+
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Ensure output directories exist
-        run: |
-          mkdir -p build/iocs
-          mkdir -p build/pcaps
-          mkdir -p build/vulnerabilities
-          mkdir -p outputs/reports
-          mkdir -p outputs/logs
-          mkdir -p outputs/charts
+          pip install -r requirements.txt pytz scapy matplotlib pandas seaborn
 
       - name: Run threat intelligence pipeline
         run: python run.py
 
       - name: Update README snapshot
-        run: python update_readme.py
+        run: python scripts/update_readme.py
 
-      - name: Commit generated artifacts
+      - name: Commit and push updates
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions@users.noreply.github.com"
-
           git add -f build outputs README.md
-
-          git commit -m "Automated update: pipeline outputs + README" || echo "Nothing to commit"
-
-          git push
+          git commit -m "Automated threat intel update (EST scheduled)" || exit 0
+          git push origin main
