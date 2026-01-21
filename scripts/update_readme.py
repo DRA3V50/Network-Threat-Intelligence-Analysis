@@ -1,102 +1,78 @@
 import os
 import pandas as pd
-from datetime import datetime
 
 # --- Paths ---
 README_PATH = "README.md"
-BUILD_IOCS = "build/iocs/osint_iocs.csv"
-BUILD_VULNS = "build/vulnerabilities/vuln_scan_sample.csv"
-BUILD_PCAP = "build/pcaps/sample_traffic.pcap"
+IOC_PATH = "build/iocs/osint_iocs.csv"
+PCAP_PATH = "build/pcaps/sample_traffic.pcap"
+VULN_PATH = "build/vulnerabilities/vuln_scan_sample.csv"
 TOP_IPS_CSV = "outputs/logs/top_source_ips.csv"
-TOP_IPS_PNG = "outputs/charts/top_source_ips.png"
+TOP_IPS_CHART = "outputs/charts/top_source_ips.png"
 
-# --- Gather metrics ---
-def count_csv_rows(csv_path):
-    if os.path.exists(csv_path):
-        df = pd.read_csv(csv_path)
-        return len(df)
+# --- Load data safely ---
+def safe_count_csv(path):
+    if os.path.exists(path):
+        try:
+            df = pd.read_csv(path)
+            return len(df)
+        except Exception:
+            return 0
     return 0
 
-def sample_pcap_exists(pcap_path):
-    return os.path.exists(pcap_path)
+vuln_count = safe_count_csv(VULN_PATH)
+ioc_count = safe_count_csv(IOC_PATH)
+top_ip_count = safe_count_csv(TOP_IPS_CSV)
 
-iocs_count = count_csv_rows(BUILD_IOCS)
-vulns_count = count_csv_rows(BUILD_VULNS)
-pcap_exists = sample_pcap_exists(BUILD_PCAP)
-
-# High-risk vulnerabilities (example: risk score > 7)
+# High-risk vulnerabilities (example: assume score column exists)
 high_risk_count = 0
-if os.path.exists(BUILD_VULNS):
-    df_vulns = pd.read_csv(BUILD_VULNS)
-    if "risk_score" in df_vulns.columns:
-        high_risk_count = (df_vulns["risk_score"] > 7).sum()
+if os.path.exists(VULN_PATH):
+    try:
+        df_vuln = pd.read_csv(VULN_PATH)
+        if "risk_score" in df_vuln.columns:
+            high_risk_count = len(df_vuln[df_vuln["risk_score"] > 7])
+    except Exception:
+        high_risk_count = 0
 
-# Top source IPs
-top_ips_count = 0
-if os.path.exists(TOP_IPS_CSV):
-    df_ips = pd.read_csv(TOP_IPS_CSV)
-    top_ips_count = len(df_ips)
+# --- Update README ---
+if os.path.exists(README_PATH):
+    with open(README_PATH, "r", encoding="utf-8") as f:
+        readme = f.read()
 
-# Timestamp
-timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-
-# --- Generate README snippet ---
-snapshot_md = f"""
+    # Dynamic daily snapshot section
+    snapshot_md = f"""
 ## 📊 Daily Analysis Snapshot
 
 > This section is dynamically updated by automated workflows.
 
-### **Daily Automated Threat Intelligence Update** ({timestamp})
+### **Daily Automated Threat Intelligence Update**
 
-- **Vulnerabilities loaded:** {vulns_count}
-- **OSINT IOCs loaded:** {iocs_count}
-- **Sample PCAP generated:** {"Yes" if pcap_exists else "No"}
-- **Top Source IPs:** {top_ips_count}
+- **Vulnerabilities loaded:** {vuln_count}
+- **OSINT IOCs loaded:** {ioc_count}
+- **Sample PCAP generated:** {"Yes" if os.path.exists(PCAP_PATH) else "No"}
+- **Top Source IPs:** {top_ip_count}
 - **High-Risk Vulnerabilities:** {high_risk_count}
 
 *This summary is auto-generated.*
-
-### **Generated Files and Outputs**
-
-#### **Reports:**
-- **[Matched IOCs CSV](outputs/reports/matched_iocs.csv)**
-- **[High-Risk Vulnerabilities CSV](outputs/reports/high_risk_vulns.csv)**
-- **[Analysis Summary MD](outputs/reports/analysis_summary.md)**
-
-#### **Chart:**"""
-
-if os.path.exists(TOP_IPS_PNG):
-    snapshot_md += f"\n![Top Source IPs Chart]({TOP_IPS_PNG})"
-
-snapshot_md += f"""
-
-#### **Logs:**
-- **[Top Source IPs CSV](outputs/logs/top_source_ips.csv)**
 """
 
-# --- Insert / Update README section ---
-def update_readme(readme_path, new_section):
-    if not os.path.exists(readme_path):
-        print(f"{readme_path} does not exist!")
-        return
-
-    with open(readme_path, "r", encoding="utf-8") as f:
-        content = f.read()
-
-    # Markers for dynamic section
-    start_marker = "<!-- DAILY_ANALYSIS_START -->"
-    end_marker = "<!-- DAILY_ANALYSIS_END -->"
-
-    if start_marker in content and end_marker in content:
-        before = content.split(start_marker)[0]
-        after = content.split(end_marker)[1]
-        new_content = f"{before}{start_marker}\n{new_section}\n{end_marker}{after}"
+    # Replace existing snapshot or append if not present
+    import re
+    pattern = r"## 📊 Daily Analysis Snapshot(.|\n)*?\*This summary is auto-generated.\*"
+    if re.search(pattern, readme):
+        readme = re.sub(pattern, snapshot_md, readme)
     else:
-        # If markers don't exist, append at the end
-        new_content = f"{content}\n{start_marker}\n{new_section}\n{end_marker}"
+        readme += "\n" + snapshot_md
 
-    with open(readme_path, "w", encoding="utf-8") as f:
-        f.write(new_content)
+    # Optionally, update chart path in README if needed
+    chart_md = f"![Top Source IPs Chart]({TOP_IPS_CHART})"
+    if "![Top Source IPs Chart]" in readme:
+        readme = re.sub(r"!\[Top Source IPs Chart\]\(.*?\)", chart_md, readme)
+    else:
+        readme += "\n" + chart_md
 
-update_readme(README_PATH, snapshot_md)
-print("[+] README.md updated with latest daily snapshot")
+    with open(README_PATH, "w", encoding="utf-8") as f:
+        f.write(readme)
+
+    print("[+] README.md updated with latest outputs")
+else:
+    print("[!] README.md not found")
