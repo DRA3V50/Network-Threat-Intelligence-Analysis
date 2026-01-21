@@ -1,33 +1,46 @@
-"""
-Single entry point for the Network Threat Intelligence pipeline
-Executed via: python -m src.run
-"""
+from datetime import datetime
+from pathlib import Path
 
-from ingestion.threat_feed_pull import pull_osint_iocs
-from analysis.pcap_parser import parse_pcap
-from analysis.ioc_correlation import correlate_iocs
-from analysis.risk_scoring import score_vulnerabilities
-from reporting.generate_charts import generate_top_ip_chart
+# INGESTION
+from src.ingestion.threat_feed_pull import pull_osint_iocs
+
+# ANALYSIS
+from src.analysis.pcap_parser import parse_pcap
+from src.analysis.vuln_analysis import generate_vulnerabilities
+
+# OUTPUT PATHS
+BUILD_DIR = Path("build")
+OUTPUT_DIR = Path("outputs/logs")
+
+BUILD_DIR.mkdir(parents=True, exist_ok=True)
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
 
 def main():
-    print("[+] Starting Network Threat Intelligence Pipeline")
+    print("[*] Starting Network Threat Intelligence Pipeline")
 
-    print("[+] Pulling OSINT IOCs...")
-    iocs = pull_osint_iocs()
+    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
-    print("[+] Parsing PCAP traffic...")
-    traffic = parse_pcap()
+    # 1. Pull OSINT IOCs
+    print("[*] Pulling OSINT IOCs")
+    iocs_path = BUILD_DIR / "iocs"
+    iocs_path.mkdir(exist_ok=True)
+    pull_osint_iocs(output_dir=iocs_path)
 
-    print("[+] Correlating traffic with IOCs...")
-    matches = correlate_iocs(traffic, iocs)
+    # 2. Generate Vulnerabilities
+    print("[*] Generating vulnerability data")
+    vulns_path = BUILD_DIR / "vulnerabilities"
+    vulns_path.mkdir(exist_ok=True)
+    generate_vulnerabilities(output_dir=vulns_path)
 
-    print("[+] Scoring vulnerabilities...")
-    score_vulnerabilities(matches)
+    # 3. Parse PCAP (simulated or existing)
+    print("[*] Parsing PCAP")
+    pcaps_path = BUILD_DIR / "pcaps"
+    pcaps_path.mkdir(exist_ok=True)
+    parse_pcap(output_dir=pcaps_path)
 
-    print("[+] Generating charts...")
-    generate_top_ip_chart()
+    print(f"[+] Pipeline completed successfully at {timestamp}")
 
-    print("[+] Pipeline completed successfully")
 
 if __name__ == "__main__":
     main()
