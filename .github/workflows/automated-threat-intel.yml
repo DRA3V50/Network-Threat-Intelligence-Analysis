@@ -1,57 +1,53 @@
-name: Daily Network Threat Intelligence Update
+name: Automated Network Threat Intelligence Update
 
 on:
   schedule:
-    # Twice daily at 08:00 and 20:00 EST
-    - cron: '0 13,1 * * *'
-  workflow_dispatch:  # allows manual triggering
+    # Runs twice daily: 8 AM and 8 PM EST (UTC-5)
+    - cron: '0 13,01 * * *'
+  workflow_dispatch:
 
 jobs:
-  build-and-update:
+  update-pipeline:
     runs-on: ubuntu-latest
 
     steps:
-      # --- Checkout repo ---
+      # 1. Checkout the repo
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          persist-credentials: false  # we use SSH for pushing
 
-      # --- Set up SSH for pushing ---
-      - name: Setup SSH key
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      # --- Configure Git for commit ---
-      - name: Configure Git
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "github-actions@github.com"
-
-      # --- Set up Python ---
-      - name: Set up Python 3.13
+      # 2. Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.13
+          python-version: '3.13'
 
-      # --- Install dependencies ---
-      - name: Install Python dependencies
+      # 3. Install dependencies
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # --- Run the pipeline ---
-      - name: Run pipeline
-        working-directory: ${{ github.workspace }}
-        run: python src/run.py
+      # 4. Start SSH agent for Git push
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # --- Stage generated files and README ---
-      - name: Commit changes
+      # 5. Run the pipeline
+      - name: Run network threat intelligence pipeline
         run: |
-          git add build/ README.md
-          git commit -m "Automated update: pipeline outputs + README" || echo "No changes to commit"
+          python -m src.run
 
-      # --- Push updates ---
-      - name: Push updates to main
-        run: git push git@github.com:${{ github.repository }}.git main
+      # 6. Update README with charts and outputs
+      - name: Update README
+        run: |
+          python -m scripts.update_readme
+
+      # 7. Commit and push changes
+      - name: Commit and push updates
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Automated update: pipeline outputs + README" || echo "No changes to commit"
+          git push origin main
