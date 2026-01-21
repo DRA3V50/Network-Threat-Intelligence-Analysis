@@ -1,51 +1,55 @@
-name: Automated Threat Intelligence Update
+name: Automated Threat Intelligence Pipeline
 
 on:
   schedule:
-    - cron: "0 9,21 * * *"  # Runs at 09:00 and 21:00 UTC (twice daily)
-  workflow_dispatch:       # Allows manual triggering
+    # Runs twice daily (EST-safe, UTC times)
+    - cron: "0 12 * * *"
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
-  update-pipeline:
+  run-pipeline:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-          fetch-depth: 0
 
-      # 2. Set up Python
-      - name: Set up Python 3.13
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.11"
 
-      # 3. Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4. Run the pipeline
-      - name: Run network threat intelligence pipeline
+      - name: Ensure output directories exist
+        run: |
+          mkdir -p build/iocs
+          mkdir -p build/pcaps
+          mkdir -p build/vulnerabilities
+          mkdir -p outputs/reports
+          mkdir -p outputs/logs
+          mkdir -p outputs/charts
+
+      - name: Run threat intelligence pipeline
         run: python run.py
 
-      # 5. Commit and push changes (force add ignored files)
-      - name: Commit pipeline outputs
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          # Set up SSH for push
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
+      - name: Update README snapshot
+        run: python update_readme.py
 
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add -f build README.md outputs
-          git commit -m "Automated update: pipeline outputs + README" || echo "No changes to commit"
-          git push git@github.com:${{ github.repository }} HEAD:main
+      - name: Commit generated artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions@users.noreply.github.com"
+
+          git add -f build outputs README.md
+
+          git commit -m "Automated update: pipeline outputs + README" || echo "Nothing to commit"
+
+          git push
