@@ -1,43 +1,46 @@
 """
-Updates README.md with the latest automated analysis snapshot
+Updates README.md using outputs/logs/high_risk_vulns.csv
 """
 
-from datetime import datetime
 from pathlib import Path
+from datetime import datetime
+import pandas as pd
 
-README_PATH = Path("README.md")
+README = Path("README.md")
+CSV = Path("outputs/logs/high_risk_vulns.csv")
+
+def csv_to_markdown(df):
+    return df.to_markdown(index=False)
 
 def main():
     timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
-    snapshot = f"""
+    if not CSV.exists():
+        table = "_No vulnerability data generated yet._"
+    else:
+        df = pd.read_csv(CSV)
+        table = csv_to_markdown(df.head(15))
+
+    section = f"""
 ## 📊 Daily Analysis Snapshot
 
-> This section is automatically updated by GitHub Actions.
+_Last automated run: **{timestamp}**_
 
-### **Daily Automated Threat Intelligence Update**
+### 🔥 High-Risk Vulnerabilities (Top 15)
 
-- **Last run:** {timestamp}
-- **OSINT IOCs:** Generated
-- **PCAP traffic:** Generated
-- **Vulnerabilities:** Generated
-- **Charts:** Generated
-
-![Top Source IPs](outputs/charts/top_source_ips.png)
+{table}
 
 ---
 """
 
-    content = README_PATH.read_text(encoding="utf-8")
+    content = README.read_text(encoding="utf-8") if README.exists() else ""
 
     marker = "## 📊 Daily Analysis Snapshot"
     if marker in content:
         content = content.split(marker)[0].rstrip()
 
-    content = content + "\n\n" + snapshot
-    README_PATH.write_text(content, encoding="utf-8")
-
-    print("[+] README updated")
+    README.write_text(content + "\n\n" + section, encoding="utf-8")
+    print("[+] README updated successfully")
 
 if __name__ == "__main__":
     main()
