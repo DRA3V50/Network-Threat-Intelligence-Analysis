@@ -63,22 +63,12 @@ Demonstrates workflows and outputs that **enable informed decision-making, opera
 ---
 
 
-## 📊 Daily Analysis Snapshot
-
-_Last updated: **2026-01-20 22:36 EST**_
-
-- **Vulnerabilities loaded:** 50
-- **OSINT IOCs loaded:** 50
-- **PCAP regenerated:** Yes
-- **High-Risk Findings:** Updated
-
-<!-- DAILY_ANALYSIS_START -->
 
 ## 📊 Daily Analysis Snapshot
 
 > This section is dynamically updated by automated workflows.
 
-### **Daily Automated Threat Intelligence Update** (2026-01-21 04:16 UTC)
+### **Daily Automated Threat Intelligence Update**
 
 - **Vulnerabilities loaded:** 1
 - **OSINT IOCs loaded:** 1
@@ -87,6 +77,7 @@ _Last updated: **2026-01-20 22:36 EST**_
 - **High-Risk Vulnerabilities:** 0
 
 *This summary is auto-generated.*
+
 
 ### **Generated Files and Outputs**
 
@@ -101,3 +92,4 @@ _Last updated: **2026-01-20 22:36 EST**_
 - **[Top Source IPs CSV](outputs/logs/top_source_ips.csv)**
 
 <!-- DAILY_ANALYSIS_END -->
+![Top Source IPs Chart](outputs/charts/top_source_ips.png)
