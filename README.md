@@ -64,6 +64,16 @@ Demonstrates workflows and outputs that **enable informed decision-making, opera
 
 ## 📊 Daily Analysis Snapshot
 
+### **Daily Automated Threat Intelligence Update**
+
+- **Vulnerabilities loaded:** 1
+- **OSINT IOCs loaded:** 1
+- **Sample PCAP generated:** Yes
+- **Top Source IPs:** 0
+- **High-Risk Vulnerabilities:** 0
+
+*This summary is auto-generated.*
+
 > This section is dynamically updated by automated workflows.
 
 ### **Daily Automated Threat Intelligence Update**
