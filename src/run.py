@@ -1,62 +1,33 @@
-# run.py — single entry point for the entire pipeline
+"""
+Single entry point for the Network Threat Intelligence pipeline
+Executed via: python -m src.run
+"""
 
-# --- Imports ---
+from ingestion.threat_feed_pull import pull_osint_iocs
+from analysis.pcap_parser import parse_pcap
+from analysis.ioc_correlation import correlate_iocs
+from analysis.risk_scoring import score_vulnerabilities
+from reporting.generate_charts import generate_top_ip_chart
 
-# OSINT ingestion
-from src.ingestion.threat_feed_pull import pull_osint_iocs
-
-# TCP/IP analysis
-from src.analysis.pcap_parser import generate_sample_pcap, parse_pcap
-
-# Threat correlation
-from src.analysis.ioc_correlation import correlate_iocs
-
-# Risk scoring
-from src.analysis.risk_scoring import score_vulnerabilities
-
-# Reporting / charts
-from src.reporting.generate_charts import generate_top_ip_chart
-
-# --- Paths to built/generated files ---
-IOC_PATH = "build/iocs/osint_iocs.csv"
-PCAP_PATH = "build/pcaps/sample_traffic.pcap"
-VULN_PATH = "build/vulnerabilities/vuln_scan_sample.csv"
-
-# --- Main Pipeline ---
 def main():
-    print("[+] Generating missing sample data if needed...")
+    print("[+] Starting Network Threat Intelligence Pipeline")
 
-    # OSINT IOCs
     print("[+] Pulling OSINT IOCs...")
-    iocs = pull_osint_iocs()  # function handles writing to IOC_PATH internally
-    print(f"[+] OSINT IOCs saved to {IOC_PATH}")
+    iocs = pull_osint_iocs()
 
-    # Sample PCAP generation
-    print("[+] Generating missing sample PCAP if needed...")
-    packets = generate_sample_pcap(PCAP_PATH)
-    print(f"[+] Parsed {len(packets)} packets from {PCAP_PATH}")
-
-    # Parsing PCAP traffic
     print("[+] Parsing PCAP traffic...")
-    traffic = parse_pcap(PCAP_PATH)
+    traffic = parse_pcap()
 
-    # Correlating IOCs with traffic
-    print("[+] Correlating IOCs with traffic...")
+    print("[+] Correlating traffic with IOCs...")
     matches = correlate_iocs(traffic, iocs)
-    print(f"[+] Correlated {len(matches)} IOC matches with traffic")
 
-    # Risk scoring
-    print("[+] Scoring risks...")
-    score_vulnerabilities(matches, VULN_PATH)
-    print(f"[+] Risk scoring complete. Results saved to {VULN_PATH}")
+    print("[+] Scoring vulnerabilities...")
+    score_vulnerabilities(matches)
 
-    # Generating charts and reports
-    print("[+] Generating charts and reports...")
+    print("[+] Generating charts...")
     generate_top_ip_chart()
-    print("[+] Charts and reports generated")
 
-    print("[+] Pipeline completed successfully!")
+    print("[+] Pipeline completed successfully")
 
-# --- Entry Point ---
 if __name__ == "__main__":
     main()
