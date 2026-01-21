@@ -1,0 +1,36 @@
+name: Network Threat Intelligence Pipeline
+
+on:
+  schedule:
+    # 12:00 AM and 12:00 PM EST
+    - cron: '0 5,17 * * *'  # GitHub Actions uses UTC → EST = UTC-5
+  workflow_dispatch:  # optional: allows manual run
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run pipeline
+      run: python run.py
+
+    - name: Upload outputs
+      uses: actions/upload-artifact@v3
+      with:
+        name: outputs
+        path: |
+          outputs/charts
+          outputs/logs

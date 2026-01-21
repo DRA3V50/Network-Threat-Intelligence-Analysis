@@ -1,0 +1,6 @@
+scapy
+pandas
+requests
+matplotlib
+ipaddress
+seaborn
