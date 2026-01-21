@@ -1,22 +1,37 @@
+# scripts/update_readme.py
 from datetime import datetime
-import pytz
 
-est = pytz.timezone("US/Eastern")
-timestamp = datetime.now(est).strftime("%Y-%m-%d %H:%M %Z")
+def update_readme(stats: dict):
+    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
-content = f"""
-## 📊 Daily Analysis Snapshot
+    content = f"""# Network-Threat-Intelligence-Analysis
 
-_Last updated: **{timestamp}**_
+📊 Automated defensive network analysis with OSINT enrichment and threat correlation
 
-- **Vulnerabilities loaded:** 50
-- **OSINT IOCs loaded:** 50
-- **PCAP regenerated:** Yes
-- **High-Risk Findings:** Updated
+---
+
+## 📊 Daily Automated Threat Intelligence Update
+
+**Last updated:** {timestamp}
+
+- **OSINT IOCs loaded:** {stats["ioc_count"]}
+- **Packets analyzed:** {stats["packet_count"]}
+- **IOC Matches:** {stats["matches"]}
+- **High-Risk Vulnerabilities:** {stats["high_risk"]}
+
+---
+
+## 📈 Top Source IPs
+
+![Top Source IPs](outputs/charts/top_source_ips.png)
+
+---
+
+## ⚠️ Legal & Ethical Notice
+
+This project is strictly defensive.  
+All data is simulated or derived from public OSINT.
 """
 
-with open("README.md", "r", encoding="utf-8") as f:
-    base = f.read().split("## 📊 Daily Analysis Snapshot")[0]
-
-with open("README.md", "w", encoding="utf-8") as f:
-    f.write(base + content)
+    with open("README.md", "w", encoding="utf-8") as f:
+        f.write(content)
