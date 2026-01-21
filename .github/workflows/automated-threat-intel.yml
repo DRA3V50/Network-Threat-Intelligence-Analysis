@@ -1,7 +1,7 @@
 name: NTIA Pipeline
 
 on:
-  # Scheduled runs: 08:00 and 20:00 EST → 13:00 and 01:00 UTC
+  # Schedule: 08:00 and 20:00 EST → 13:00 and 01:00 UTC
   schedule:
     - cron: "0 13 * * *"   # 08:00 EST
     - cron: "0 1 * * *"    # 20:00 EST
@@ -12,9 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
+      # 1️⃣ Checkout repository and allow pushing using GITHUB_TOKEN
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true   # ✅ this fixes 403 push errors
 
       # 2️⃣ Setup Python
       - name: Set up Python
@@ -32,19 +34,17 @@ jobs:
       - name: Run NTIA pipeline
         run: python -m src.run
 
-      # 5️⃣ Commit updated files
+      # 5️⃣ Commit updated files (README + build/outputs)
       - name: Commit & push updates
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          
-          # Add all updated outputs and README
+
+          # Stage all relevant changes
           git add README.md build outputs
-          
+
           # Commit only if there are changes
           git diff --cached --quiet || git commit -m "Automated update: pipeline outputs + README"
-          
-          # Push changes back to the same branch
+
+          # Push back to main branch
           git push
