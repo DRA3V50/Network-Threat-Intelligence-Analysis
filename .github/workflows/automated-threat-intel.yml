@@ -2,9 +2,9 @@ name: Automated Threat Intelligence Pipeline
 
 on:
   schedule:
-    # Run twice daily at 10:00 UTC and 22:00 UTC (adjust to EST if needed)
-    - cron: '0 8,20 * * *'
-  workflow_dispatch:  # Manual trigger
+    # Run twice daily at 10:00 UTC and 22:00 UTC (adjust for EST if needed)
+    - cron: '0 15,3 * * *'
+  workflow_dispatch:  # manual trigger
 
 jobs:
   run_pipeline:
@@ -17,8 +17,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          ssh-key: ${{ secrets.SSH_KEY }}
-          persist-credentials: false  # ensure SSH is used
+          persist-credentials: false  # do not use default token, force SSH
 
       # Step 2: Setup Python
       - name: Set up Python
@@ -37,8 +36,16 @@ jobs:
         run: |
           python run.py
 
-      # Step 5: Commit and push updated outputs + README
-      - name: Commit updated outputs and README
+      # Step 5: Configure SSH for pushing
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      # Step 6: Commit and push updated outputs + README
+      - name: Commit and push outputs
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
@@ -46,6 +53,6 @@ jobs:
           git commit -m "Automated update: pipeline outputs + README" || echo "Nothing to commit"
           git push git@github.com:DRA3V50/Network-Threat-Intelligence-Analysis.git main
 
-      # Step 6: Print completion
+      # Step 7: Print completion
       - name: Finished
         run: echo "✅ Pipeline completed and updates pushed!"
