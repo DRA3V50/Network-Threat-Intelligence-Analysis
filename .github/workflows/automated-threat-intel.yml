@@ -2,9 +2,6 @@ name: Automated Threat Intel
 
 on:
   workflow_dispatch:        # Manual trigger
-  push:
-    branches:
-      - main
   schedule:
     # Runs twice daily at 08:00 AM and 08:00 PM EST (converted to UTC)
     - cron: '0 13,1 * * *'  
@@ -43,10 +40,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.NTIA_Key }}
         run: |
-          git add build/* outputs/* README.md
-          if git diff --cached --quiet; then
+          # Only commit if there are changes not made by the bot itself
+          if git diff --quiet HEAD build/* outputs/* README.md; then
             echo "No changes to commit."
           else
+            git add build/* outputs/* README.md
             git commit -m "Automated update: pipeline outputs + README"
             git push origin main
           fi
+
