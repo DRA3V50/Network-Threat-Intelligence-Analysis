@@ -1,114 +1,99 @@
-from pathlib import Path
-from datetime import datetime
-import pandas as pd
+# Network-Threat-Intelligence-Analysis
 
-# ----------------------------
-# CONFIG
-# ----------------------------
-README_PATH = Path("README.md")
+📊 Automated defensive network analysis with OSINT enrichment and threat correlation
 
-# CSV paths
-IOCS_CSV = Path("build/iocs/osint_iocs.csv")
-VULNS_CSV = Path("build/vulnerabilities/vuln_scan_sample.csv")
+---
 
-# Chart path
-CHART_PATH = Path("outputs/charts/top_source_ips.png")
+📡 Defensive network intelligence research and automation for security operations and analytic environments.
 
-# Auto-section markers
-MARKER_START = "<!-- AUTO-GENERATED-SECTION:START -->"
-MARKER_END = "<!-- AUTO-GENERATED-SECTION:END -->"
+---
 
-# How many rows to show in summary tables
-TOP_N = 10
+## 🗂 Overview
 
-# ----------------------------
-# HELPER FUNCTIONS
-# ----------------------------
-def read_csv_preview(csv_path, top_n=TOP_N):
-    """Read CSV and return top_n rows as markdown table."""
-    if not csv_path.exists():
-        return f"*CSV not found: {csv_path.name}*"
-    try:
-        df = pd.read_csv(csv_path)
-        if df.empty:
-            return f"*No data in {csv_path.name}*"
-        df_preview = df.head(top_n)
-        return df_preview.to_markdown(index=False)
-    except Exception as e:
-        return f"*Error reading {csv_path.name}: {e}*"
+This repository demonstrates a Blue Team–focused approach to analyzing network activity,  
+open-source threat intelligence, and vulnerability data in support of defensive cyber operations.  
+The emphasis is on **analytical reasoning, correlation of intelligence, and repeatable workflows**,  
+reflecting how network-centric threat intelligence informs operational decision-making.
 
+---
 
-def generate_auto_section():
-    """Generate the HTML + markdown dashboard for the README."""
-    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+## 🔍 Analytical Focus
 
-    # Tables as markdown
-    vulns_table = read_csv_preview(VULNS_CSV)
-    iocs_table = read_csv_preview(IOCS_CSV)
+Designed to support:
 
-    # HTML table for side-by-side layout
-    section = f"""
-{MARKER_START}
+- Understanding network behavior and traffic patterns  
+- Applying OSINT to contextualize observed activity  
+- Correlating indicators of compromise with network-derived insights  
+- Prioritizing risk to support informed defensive actions  
 
-### **Daily Automated Threat Intelligence Update**
+The goal is **clarity, attribution context, and defensibility**, not detection for its own sake.
 
-**Timestamp (UTC):** {timestamp}
+---
 
-<table>
-<tr>
-<td width="50%">
+## 📈 Operational Outcomes
 
-#### High-Risk Vulnerabilities
-{vulns_table}
+Execution produces:
 
-</td>
-<td width="50%">
+- Analyst-ready intelligence artifacts  
+- Correlated threat indicators to guide mitigation  
+- High-level visualizations summarizing network activity trends  
+- Written summaries aligned with reporting and briefing standards  
 
-#### Top OSINT IOCs
-{iocs_table}
+Outputs are designed to provide **actionable insight for analysts and decision-makers**.
 
-</td>
-</tr>
-<tr>
-<td colspan="2" align="center">
+---
 
-#### Network Activity Chart
-<img src="{CHART_PATH}" alt="Top Source IPs Chart" width="600">
+## ⚙️ Automation & Design
 
-</td>
-</tr>
-</table>
+Analysis workflows are automated for consistency and repeatability while keeping final conclusions analyst-driven.  
+Workflows mirror operational environments where **traceability, documentation, and discipline** are required.
 
-*This summary is auto-generated.*
+---
 
-{MARKER_END}
-"""
-    return section
+## 🛡️ Intended Use
 
+This repository is designed for:
 
-def update_readme():
-    """Replace the auto-generated section in README."""
-    if not README_PATH.exists():
-        print(f"[!] README.md not found at {README_PATH}")
-        return
+- Defensive cybersecurity professionals  
+- Threat intelligence analysts  
+- Security operations teams in government, federal, or mission-driven organizations  
 
-    readme_text = README_PATH.read_text(encoding="utf-8")
+It demonstrates workflows, analysis methods, and outputs that **enable informed decision-making, operational awareness, and risk-based defense**.
 
-    # Ensure markers exist
-    if MARKER_START not in readme_text or MARKER_END not in readme_text:
-        print("[!] Auto-section markers not found in README, inserting them at end.")
-        readme_text += f"\n{MARKER_START}\n{MARKER_END}\n"
+---
 
-    # Split and replace
-    before, remainder = readme_text.split(MARKER_START, 1)
-    _, after = remainder.split(MARKER_END, 1)
+## 📊 Daily Analysis Snapshot
 
-    new_section = generate_auto_section()
+> This section is dynamically updated by automated workflows.
 
-    updated_text = before + new_section + after
-    README_PATH.write_text(updated_text, encoding="utf-8")
-    print("[+] README.md updated successfully.")
+<!-- AUTO-GENERATED-SECTION:START -->
+<!-- AUTO-GENERATED-SECTION:END -->
 
+---
 
-if __name__ == "__main__":
-    update_readme()
+### **Generated Files and Outputs**
+
+#### **Reports:**
+- **[osint_iocs.csv](build/iocs/osint_iocs.csv)**
+- **[vuln_scan_sample.csv](build/vulnerabilities/vuln_scan_sample.csv)**
+
+#### **Logs:**
+- **[high_risk_vulns.csv](outputs/logs/high_risk_vulns.csv)**
+
+---
+
+## ⚠️ Legal & Ethical Notice
+
+This project is strictly defensive:
+
+- No exploitation, intrusion, or active scanning  
+- Data is sanitized, simulated, or derived from public sources  
+- Usage is limited to education, research, and lawful defensive analysis
+
+---
+
+## 🚨 Status
+
+This repository is actively maintained and updated as part of an ongoing **network threat intelligence workflow**.  
+Analysis artifacts, correlated indicators, and visual summaries are refreshed on a regular basis to reflect the latest defensive insights.  
+The project demonstrates **repeatable, analyst-driven processes** consistent with operational security and intelligence standards.
