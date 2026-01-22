@@ -41,5 +41,5 @@ jobs:
           else
             git add build/* outputs/* README.md
             git commit -m "Automated update: pipeline outputs + README" --author="github-actions <github-actions@users.noreply.github.com>"
-            git push https://x-access-token:${{ secrets.NTIA_Key }}@github.com/${{ github.repository }}.git HEAD:main
+            git push https://x-access-token:${{ secrets.NTIA_KEY }}@github.com/${{ github.repository }}.git HEAD:main
           fi
