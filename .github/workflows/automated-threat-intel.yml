@@ -38,7 +38,7 @@ jobs:
 
       - name: Commit and push changes
         env:
-          GITHUB_TOKEN: ${{ secrets.NTIA_KEY }}   # <-- must match your secret exactly
+          GITHUB_TOKEN: ${{ secrets.NTIA_Key }}   # <-- exact secret name
         run: |
           # Only commit if there are real changes
           if git diff --quiet HEAD build/* outputs/* README.md; then
@@ -48,4 +48,3 @@ jobs:
             git commit -m "Automated update: pipeline outputs + README" --author="github-actions <github-actions@users.noreply.github.com>"
             git push origin main
           fi
-
