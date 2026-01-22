@@ -8,6 +8,8 @@ from src.ingestion.threat_feed_pull import pull_osint_iocs
 from src.analysis.pcap_parser import parse_pcap
 from src.analysis.vuln_analysis import generate_vulnerabilities
 
+from src.analysis.charting import generate_top_source_ips_chart
+
 # OUTPUT PATHS
 BUILD_DIR = Path("build")
 OUTPUT_DIR = Path("outputs/logs")
