@@ -38,14 +38,14 @@ jobs:
 
       - name: Commit and push changes
         env:
-          GITHUB_TOKEN: ${{ secrets.NTIA_Key }}
+          GITHUB_TOKEN: ${{ secrets.NTIA_KEY }}   # <-- must match your secret exactly
         run: |
-          # Only commit if there are changes not made by the bot itself
+          # Only commit if there are real changes
           if git diff --quiet HEAD build/* outputs/* README.md; then
             echo "No changes to commit."
           else
             git add build/* outputs/* README.md
-            git commit -m "Automated update: pipeline outputs + README"
+            git commit -m "Automated update: pipeline outputs + README" --author="github-actions <github-actions@users.noreply.github.com>"
             git push origin main
           fi
 
