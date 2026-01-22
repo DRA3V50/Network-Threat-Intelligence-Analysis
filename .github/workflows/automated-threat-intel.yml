@@ -35,13 +35,11 @@ jobs:
           git config user.email "github-actions@users.noreply.github.com"
 
       - name: Commit and push changes
-        env:
-          NTIA_PAT: ${{ secrets.NTIA_Key }}
         run: |
           if git diff --quiet HEAD build/* outputs/* README.md; then
             echo "No changes to commit."
           else
             git add build/* outputs/* README.md
             git commit -m "Automated update: pipeline outputs + README" --author="github-actions <github-actions@users.noreply.github.com>"
-            git push https://x-access-token:${NTIA_PAT}@github.com/${GITHUB_REPOSITORY}.git HEAD:main
+            git push https://x-access-token:${{ secrets.NTIA_Key }}@github.com/${{ github.repository }}.git HEAD:main
           fi
