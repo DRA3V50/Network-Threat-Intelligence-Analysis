@@ -1,14 +1,13 @@
 name: Automated Threat Intel
 
-# Run workflow on push to main, schedule, or manual dispatch
 on:
-  workflow_dispatch:        # Manual run
+  workflow_dispatch:        # Manual trigger
   push:
     branches:
       - main
   schedule:
-    # Runs twice daily at 08:00 AM and 08:00 PM EST (convert to UTC)
-    - cron: '0 13,1 * * *'   # 08:00 AM and 08:00 PM EST in UTC
+    # Runs twice daily at 08:00 AM and 08:00 PM EST (converted to UTC)
+    - cron: '0 13,1 * * *'  
 
 jobs:
   update_pipeline:
@@ -50,5 +49,3 @@ jobs:
           else
             git commit -m "Automated update: pipeline outputs + README"
             git push origin main
-          fi
-
