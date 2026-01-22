@@ -1,7 +1,7 @@
 name: Automated Threat Intel
 
 on:
-  workflow_dispatch:        # Manual trigger
+  workflow_dispatch:
   schedule:
     # Runs twice daily at 08:00 AM and 08:00 PM EST (converted to UTC)
     - cron: '0 13,1 * * *'
@@ -38,7 +38,7 @@ jobs:
 
       - name: Commit and push changes
         env:
-          GITHUB_TOKEN: ${{ secrets.NTIA_KEY }}  # <-- all caps to match GitHub UI
+          GITHUB_TOKEN: ${{ secrets.NTIA_KEY }}
         run: |
           # Only commit if there are real changes
           if git diff --quiet HEAD build/* outputs/* README.md; then
@@ -47,3 +47,4 @@ jobs:
             git add build/* outputs/* README.md
             git commit -m "Automated update: pipeline outputs + README" --author="github-actions <github-actions@users.noreply.github.com>"
             git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:main
+          fi
