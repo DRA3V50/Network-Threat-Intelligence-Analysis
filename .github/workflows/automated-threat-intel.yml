@@ -49,3 +49,4 @@ jobs:
           else
             git commit -m "Automated update: pipeline outputs + README"
             git push origin main
+          fi
