@@ -73,7 +73,7 @@ It demonstrates workflows, analysis methods, and outputs that **enable informed 
 - **Sample PCAP generated:** Yes
 - **Top Source IPs:** 10
 
-![Top Source IPs Chart]()
+![Top Source IPs Chart](outputs/charts/top_source_ips.png)
 
 *This summary is auto-generated.*
 
@@ -86,7 +86,7 @@ It demonstrates workflows, analysis methods, and outputs that **enable informed 
 - **[vuln_scan_sample.csv](build/vulnerabilities/vuln_scan_sample.csv)**
 
 #### **Chart:**
-No chart generated yet.
+![Top Source IPs Chart](outputs/charts/top_source_ips.png)
 
 #### **Logs:**
 - **[high_risk_vulns.csv](outputs/logs/high_risk_vulns.csv)**
