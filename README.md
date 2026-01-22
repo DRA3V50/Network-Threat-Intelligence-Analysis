@@ -108,3 +108,24 @@ This project is strictly defensive:
 This repository is actively maintained and updated as part of an ongoing **network threat intelligence workflow**.  
 Analysis artifacts, correlated indicators, and visual summaries are refreshed on a regular basis to reflect the latest defensive insights.  
 The project demonstrates **repeatable, analyst-driven processes** consistent with operational security and intelligence standards.
+
+
+<!-- AUTO-GENERATED-SECTION:START -->
+
+### **Daily Automated Threat Intelligence Update**
+
+**Timestamp (UTC):** 2026-01-22 03:06 UTC
+
+#### Top High-Risk Vulnerabilities
+*Error reading vuln_scan_sample.csv: `Import tabulate` failed.  Use pip or conda to install the tabulate package.*
+
+#### Top OSINT IOCs
+*Error reading osint_iocs.csv: `Import tabulate` failed.  Use pip or conda to install the tabulate package.*
+
+#### Network Activity Chart
+![Top Source IPs Chart](outputs/charts/top_source_ips.png)
+
+*This summary is auto-generated.*
+
+<!-- AUTO-GENERATED-SECTION:END -->
+
