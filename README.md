@@ -111,23 +111,41 @@ The project demonstrates **repeatable, analyst-driven processes** consistent wit
 
 
 
+
 <!-- AUTO-GENERATED-SECTION:START -->
 
 ### **Daily Automated Threat Intelligence Update**
 
-**Timestamp (UTC):** 2026-01-22 03:22 UTC
+📊 **Timestamp (UTC):** 2026-01-22 03:38 UTC
 
-#### Top High-Risk Vulnerabilities
+<table>
+<tr>
+<td width="50%">
+
+#### 🔴 High-Risk Vulnerabilities
 *Error reading vuln_scan_sample.csv: `Import tabulate` failed.  Use pip or conda to install the tabulate package.*
 
-#### Top OSINT IOCs
+</td>
+<td width="50%">
+
+#### 🧪 Top OSINT IOCs
 *Error reading osint_iocs.csv: `Import tabulate` failed.  Use pip or conda to install the tabulate package.*
 
-#### Network Activity Chart
-![Top Source IPs Chart](outputs/charts/top_source_ips.png)
+</td>
+</tr>
+<tr>
+<td colspan="2" align="center">
+
+#### 📈 Network Activity Chart
+<img src="outputs/charts/top_source_ips.png" alt="Top Source IPs Chart" width="600">
+
+</td>
+</tr>
+</table>
 
 *This summary is auto-generated.*
 
 <!-- AUTO-GENERATED-SECTION:END -->
+
 
 
