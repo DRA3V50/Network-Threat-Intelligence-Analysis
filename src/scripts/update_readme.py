@@ -39,12 +39,14 @@ def read_csv_preview(csv_path, top_n=TOP_N):
 
 
 def generate_auto_section():
-    """Generate the markdown content for the auto-updated section."""
+    """Generate the HTML + markdown dashboard for the README."""
     timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
-    iocs_table = read_csv_preview(IOCS_CSV)
+    # Tables as markdown
     vulns_table = read_csv_preview(VULNS_CSV)
+    iocs_table = read_csv_preview(IOCS_CSV)
 
+    # HTML table for side-by-side layout
     section = f"""
 {MARKER_START}
 
@@ -52,14 +54,30 @@ def generate_auto_section():
 
 **Timestamp (UTC):** {timestamp}
 
-#### Top High-Risk Vulnerabilities
+<table>
+<tr>
+<td width="50%">
+
+#### High-Risk Vulnerabilities
 {vulns_table}
+
+</td>
+<td width="50%">
 
 #### Top OSINT IOCs
 {iocs_table}
 
+</td>
+</tr>
+<tr>
+<td colspan="2" align="center">
+
 #### Network Activity Chart
-![Top Source IPs Chart]({CHART_PATH})
+<img src="{CHART_PATH}" alt="Top Source IPs Chart" width="600">
+
+</td>
+</tr>
+</table>
 
 *This summary is auto-generated.*
 
