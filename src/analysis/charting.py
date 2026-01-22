@@ -11,23 +11,42 @@ def generate_top_source_ips_chart(csv_path, output_path):
         print(f"[!] CSV not found: {csv_path}")
         return
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
     df = pd.read_csv(csv_path)
-
     if df.empty:
-        print("[!] CSV is empty — skipping chart")
+        print("[!] CSV empty, skipping chart")
         return
 
-    plt.figure(figsize=(10, 6))
-    plt.bar(df["source_ip"], df["count"])
-    plt.xticks(rotation=45, ha="right")
-    plt.title("Top Source IPs")
-    plt.xlabel("Source IP")
-    plt.ylabel("Connection Count")
+    # ---- STYLE (Resident Evil theme) ----
+    plt.style.use("dark_background")
+    plt.rcParams.update({
+        "figure.figsize": (7, 4),     # SMALLER
+        "axes.facecolor": "#0b0b0b",
+        "figure.facecolor": "#0b0b0b",
+        "axes.edgecolor": "white",
+        "axes.labelcolor": "white",
+        "xtick.color": "white",
+        "ytick.color": "white",
+        "text.color": "white",
+    })
+
+    plt.bar(
+        df["source_ip"],
+        df["count"],
+        color="#b30000",              # Umbrella red
+        edgecolor="white"
+    )
+
+    plt.title("Top Source IPs (Observed Network Activity)", fontsize=11)
+    plt.xlabel("Source IP", fontsize=9)
+    plt.ylabel("Connection Count", fontsize=9)
+
+    plt.xticks(rotation=45, ha="right", fontsize=8)
+    plt.yticks(fontsize=8)
+
     plt.tight_layout()
 
-    plt.savefig(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(output_path, dpi=120)   # DPI keeps it crisp but not huge
     plt.close()
 
     print(f"[+] Chart written to {output_path}")
