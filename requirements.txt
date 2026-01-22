@@ -7,11 +7,5 @@ tabulate>=0.9.0
 # Charting / plotting
 matplotlib>=3.7.0
 
-# Optional: file/path handling (usually standard library)
-# pathlib is built-in, so no need to install
-
-# For any OSINT fetching or HTTP requests if needed
+# HTTP requests for OSINT fetching
 requests>=2.31.0
-
-# Optional: CSV parsing robustness
-openpyxl>=3.2.0
