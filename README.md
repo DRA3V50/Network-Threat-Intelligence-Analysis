@@ -64,32 +64,22 @@ It demonstrates workflows, analysis methods, and outputs that **enable informed 
 
 ## 📊 Daily Analysis Snapshot
 
-> This section is dynamically updated by automated workflows.
+> This section is dynamically updated by automated workflows.  
+> **Do not edit content between the markers below.**
 
-### **Daily Automated Threat Intelligence Update**
-
-- **Vulnerabilities loaded:** 50
-- **OSINT IOCs loaded:** 50
-- **Sample PCAP generated:** Yes
-- **Top Source IPs:** 10
-
-![Top Source IPs Chart](outputs/charts/top_source_ips.png)
-
-*This summary is auto-generated.*
+<!-- AUTO-GENERATED-SECTION:START -->
+<!-- AUTO-GENERATED-SECTION:END -->
 
 ---
 
-### **Generated Files and Outputs**
+## 📁 Generated Files
 
-#### **Reports:**
-- **[osint_iocs.csv](build/iocs/osint_iocs.csv)**
-- **[vuln_scan_sample.csv](build/vulnerabilities/vuln_scan_sample.csv)**
+### Reports
+- **[OSINT IOCs](build/iocs/osint_iocs.csv)**
+- **[Vulnerability Scan](build/vulnerabilities/vuln_scan_sample.csv)**
 
-#### **Chart:**
-![Top Source IPs Chart](outputs/charts/top_source_ips.png)
-
-#### **Logs:**
-- **[high_risk_vulns.csv](outputs/logs/high_risk_vulns.csv)**
+### Logs
+- **[High Risk Vulnerabilities](outputs/logs/high_risk_vulns.csv)**
 
 ---
 
@@ -105,9 +95,9 @@ This project is strictly defensive:
 
 ## 🚨 Status
 
-This repository is actively maintained and updated as part of an ongoing **network threat intelligence workflow**.  
-Analysis artifacts, correlated indicators, and visual summaries are refreshed on a regular basis to reflect the latest defensive insights.  
-The project demonstrates **repeatable, analyst-driven processes** consistent with operational security and intelligence standards.
+This repository is actively maintained and updated as part of an ongoing  
+**network threat intelligence workflow**.  
+Analysis artifacts, correlated indicators, and visual summaries are refreshed automatically.
 
 
 
