@@ -2,6 +2,7 @@ from pathlib import Path
 from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
+import random
 
 # Paths
 BUILD_DIR = Path("build")
@@ -11,21 +12,24 @@ README_PATH = Path("README.md")
 
 CHARTS_DIR.mkdir(parents=True, exist_ok=True)
 
-# Limit rows for tables to display in README
+# Max/min rows to show in README
 MAX_ROWS = 8
 MIN_ROWS = 3
 
-# Read top source IPs CSV
+def sample_rows(df: pd.DataFrame, min_rows=MIN_ROWS, max_rows=MAX_ROWS):
+    """Return a random sample between min_rows and max_rows."""
+    n_rows = random.randint(min_rows, max_rows)
+    return df.head(n_rows)  # or random.sample if you prefer shuffle
+
+# 1️⃣ Top Source IPs Chart
 top_ips_csv = BUILD_DIR / "pcaps" / "top_source_ips.csv"
 if not top_ips_csv.exists():
     raise FileNotFoundError(f"{top_ips_csv} not found. Make sure the workflow generates it.")
 
 top_ips_df = pd.read_csv(top_ips_csv)
+top_ips_display = sample_rows(top_ips_df)
 
-# Truncate rows
-top_ips_display = top_ips_df.head(MAX_ROWS)
-
-# Generate chart
+# Generate chart with dark / red-white theme
 plt.style.use('dark_background')
 fig, ax = plt.subplots(figsize=(8, 4))
 ax.bar(top_ips_display['source_ip'], top_ips_display['count'], color=['red', 'white'])
@@ -34,29 +38,31 @@ ax.set_ylabel("Count")
 ax.set_title("Top Source IPs")
 plt.xticks(rotation=45, ha='right')
 plt.tight_layout()
-
 chart_path = CHARTS_DIR / "top_source_ips.png"
 plt.savefig(chart_path)
 plt.close(fig)
 
-# Read OSINT and Vulnerabilities CSVs (truncate rows)
+# 2️⃣ OSINT IOCs Table
 iocs_csv = BUILD_DIR / "iocs" / "osint_iocs.csv"
+iocs_df = pd.read_csv(iocs_csv)
+iocs_display = sample_rows(iocs_df)
+
+# 3️⃣ Vulnerabilities Table
 vulns_csv = BUILD_DIR / "vulnerabilities" / "vuln_scan_sample.csv"
+vulns_df = pd.read_csv(vulns_csv)
+vulns_display = sample_rows(vulns_df)
 
-osint_df = pd.read_csv(iocs_csv).head(MAX_ROWS)
-vulns_df = pd.read_csv(vulns_csv).head(MAX_ROWS)
-
-# Prepare Markdown tables
+# Convert to Markdown
 def df_to_md_table(df: pd.DataFrame) -> str:
     return df.to_markdown(index=False)
 
-osint_md = df_to_md_table(osint_df)
-vulns_md = df_to_md_table(vulns_df)
+iocs_md = df_to_md_table(iocs_display)
+vulns_md = df_to_md_table(vulns_display)
 
 # Timestamp
 timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
-# Prepare auto-generated block
+# Auto-generated block
 auto_block = f"""
 <!-- AUTO-GENERATED-SECTION:START -->
 
@@ -64,14 +70,30 @@ auto_block = f"""
 
 📊 **Timestamp (UTC):** {timestamp}
 
+<table>
+<tr>
+<td width="50%">
+
 #### 🔴 High-Risk Vulnerabilities
 {vulns_md}
 
+</td>
+<td width="50%">
+
 #### 🧪 Top OSINT IOCs
-{osint_md}
+{iocs_md}
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="center">
 
 #### 📈 Network Activity Chart
 <img src="{chart_path.as_posix()}" alt="Top Source IPs Chart" width="600">
+
+</td>
+</tr>
+</table>
 
 *This summary is auto-generated.*
 
@@ -88,7 +110,6 @@ if start_marker in readme_text and end_marker in readme_text:
     post = readme_text.split(end_marker)[1]
     new_readme = f"{pre}{auto_block}{post}"
 else:
-    # If no markers exist, append to the end
     new_readme = readme_text + "\n" + auto_block
 
 README_PATH.write_text(new_readme)
