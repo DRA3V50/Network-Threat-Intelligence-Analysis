@@ -74,33 +74,31 @@ It demonstrates workflows, analysis methods, and outputs that **enable informed 
 
 ### **Daily Automated Threat Intelligence Update**
 
-📊 **Timestamp (UTC):** 2026-01-23 03:17 UTC
+📊 **Timestamp (UTC):** 2026-01-23 03:23 UTC
 
 #### 🧪 Top OSINT IOCs
-| ioc_type | ioc_value | confidence | source |
-| :--------: | :---------: | :----------: | :------: |
-| HASH | a413c3c85c185531b84da934a6a6b257 | 84 | OSINT-SIM |
-| DOMAIN | malicious523.com | 79 | OSINT-SIM |
-| URL | http://bad565.example/path | 69 | OSINT-SIM |
-| IP | 185.15.83.112 | 74 | OSINT-SIM |
-| IP | 185.70.22.66 | 86 | OSINT-SIM |
-| HASH | 976e9c2daa7b53eef8474b7f24cdba40 | 66 | OSINT-SIM |
-| IP | 185.215.18.120 | 85 | OSINT-SIM |
-| IP | 185.113.100.29 | 90 | OSINT-SIM |
-
+| ioc_type   | ioc_value                        |   confidence | source    |
+|:-----------|:---------------------------------|-------------:|:----------|
+| HASH       | b5da133c07280294242ab3d4062cff14 |           92 | OSINT-SIM |
+| HASH       | de6b72de987cfc44d3c55394f6c50274 |           75 | OSINT-SIM |
+| URL        | http://bad459.example/path       |           95 | OSINT-SIM |
+| IP         | 185.182.42.86                    |           90 | OSINT-SIM |
+| HASH       | 7bdc5916e03b6a905ebbaf242e7de7fc |           84 | OSINT-SIM |
+| DOMAIN     | malicious919.com                 |           84 | OSINT-SIM |
+| HASH       | d8bca6b9f9595d89a2348288c7218bc6 |           60 | OSINT-SIM |
+| HASH       | efb657c3718e2a0047b894b0b6fe5b90 |           64 | OSINT-SIM |
 
 #### 🔴 High-Risk Vulnerabilities
-| vuln_id | cve | severity | risk_score | affected_host |
-| :-------: | :---: | :--------: | :----------: | :-------------: |
-| VULN-1000 | CVE-2024-9442 | MEDIUM | 4.3 | 192.168.1.16 |
-| VULN-1001 | CVE-2024-4527 | MEDIUM | 7.0 | 192.168.1.22 |
-| VULN-1002 | CVE-2024-2098 | CRITICAL | 8.8 | 192.168.1.204 |
-| VULN-1003 | CVE-2024-5404 | MEDIUM | 6.8 | 192.168.1.246 |
-| VULN-1004 | CVE-2024-9819 | MEDIUM | 6.8 | 192.168.1.23 |
-| VULN-1005 | CVE-2024-7780 | LOW | 3.3 | 192.168.1.10 |
-| VULN-1006 | CVE-2024-5981 | HIGH | 4.7 | 192.168.1.27 |
-| VULN-1007 | CVE-2024-4118 | CRITICAL | 7.5 | 192.168.1.230 |
-
+| vuln_id   | cve           | severity   |   risk_score | affected_host   |
+|:----------|:--------------|:-----------|-------------:|:----------------|
+| VULN-1000 | CVE-2024-3153 | MEDIUM     |          9.6 | 192.168.1.242   |
+| VULN-1001 | CVE-2024-7454 | CRITICAL   |          7.2 | 192.168.1.211   |
+| VULN-1002 | CVE-2024-7690 | CRITICAL   |          4.6 | 192.168.1.88    |
+| VULN-1003 | CVE-2024-4382 | MEDIUM     |          1.6 | 192.168.1.29    |
+| VULN-1004 | CVE-2024-8975 | HIGH       |          9.7 | 192.168.1.225   |
+| VULN-1005 | CVE-2024-4364 | MEDIUM     |          1.5 | 192.168.1.75    |
+| VULN-1006 | CVE-2024-9229 | CRITICAL   |          5   | 192.168.1.41    |
+| VULN-1007 | CVE-2024-9204 | MEDIUM     |          3   | 192.168.1.214   |
 
 #### 📈 Network Activity Chart
 ![Top Source IPs Chart](outputs/charts/top_source_ips.png)
@@ -108,6 +106,7 @@ It demonstrates workflows, analysis methods, and outputs that **enable informed 
 *This summary is auto-generated.*
 
 <!-- AUTO-GENERATED-SECTION:END -->
+
 
 
 
