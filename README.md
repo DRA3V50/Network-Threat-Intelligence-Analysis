@@ -74,49 +74,36 @@ It demonstrates workflows, analysis methods, and outputs that **enable informed 
 
 ### **Daily Automated Threat Intelligence Update**
 
-📊 **Timestamp (UTC):** 2026-01-23 03:02 UTC
-
-<table>
-<tr>
-<td width="50%">
-
-#### 🔴 High-Risk Vulnerabilities
-| vuln_id   | cve           | severity   |   risk_score | affected_host   |
-|:----------|:--------------|:-----------|-------------:|:----------------|
-| VULN-1000 | CVE-2024-6299 | HIGH       |          6.5 | 192.168.1.209   |
-| VULN-1001 | CVE-2024-6223 | LOW        |          8   | 192.168.1.198   |
-| VULN-1002 | CVE-2024-5018 | HIGH       |          6.4 | 192.168.1.218   |
-| VULN-1003 | CVE-2024-2693 | HIGH       |          4.7 | 192.168.1.50    |
-| VULN-1004 | CVE-2024-7041 | CRITICAL   |          6.9 | 192.168.1.134   |
-| VULN-1005 | CVE-2024-8073 | LOW        |          2   | 192.168.1.96    |
-| VULN-1006 | CVE-2024-3517 | HIGH       |          6.1 | 192.168.1.50    |
-
-</td>
-<td width="50%">
+📊 **Timestamp (UTC):** 2026-01-23 03:17 UTC
 
 #### 🧪 Top OSINT IOCs
-| ioc_type   | ioc_value                        |   confidence | source    |
-|:-----------|:---------------------------------|-------------:|:----------|
-| IP         | 185.225.130.190                  |           65 | OSINT-SIM |
-| URL        | http://bad878.example/path       |           62 | OSINT-SIM |
-| HASH       | 09311598f7a272bfae6c9a12652933d5 |           84 | OSINT-SIM |
-| URL        | http://bad369.example/path       |           93 | OSINT-SIM |
-| DOMAIN     | malicious791.com                 |           75 | OSINT-SIM |
-| HASH       | 3d86035e6bab5108c9bc6b479ac18b1a |           67 | OSINT-SIM |
-| IP         | 185.12.135.242                   |           70 | OSINT-SIM |
-| URL        | http://bad218.example/path       |           75 | OSINT-SIM |
+| ioc_type | ioc_value | confidence | source |
+| :--------: | :---------: | :----------: | :------: |
+| HASH | a413c3c85c185531b84da934a6a6b257 | 84 | OSINT-SIM |
+| DOMAIN | malicious523.com | 79 | OSINT-SIM |
+| URL | http://bad565.example/path | 69 | OSINT-SIM |
+| IP | 185.15.83.112 | 74 | OSINT-SIM |
+| IP | 185.70.22.66 | 86 | OSINT-SIM |
+| HASH | 976e9c2daa7b53eef8474b7f24cdba40 | 66 | OSINT-SIM |
+| IP | 185.215.18.120 | 85 | OSINT-SIM |
+| IP | 185.113.100.29 | 90 | OSINT-SIM |
 
-</td>
-</tr>
-<tr>
-<td colspan="2" align="center">
+
+#### 🔴 High-Risk Vulnerabilities
+| vuln_id | cve | severity | risk_score | affected_host |
+| :-------: | :---: | :--------: | :----------: | :-------------: |
+| VULN-1000 | CVE-2024-9442 | MEDIUM | 4.3 | 192.168.1.16 |
+| VULN-1001 | CVE-2024-4527 | MEDIUM | 7.0 | 192.168.1.22 |
+| VULN-1002 | CVE-2024-2098 | CRITICAL | 8.8 | 192.168.1.204 |
+| VULN-1003 | CVE-2024-5404 | MEDIUM | 6.8 | 192.168.1.246 |
+| VULN-1004 | CVE-2024-9819 | MEDIUM | 6.8 | 192.168.1.23 |
+| VULN-1005 | CVE-2024-7780 | LOW | 3.3 | 192.168.1.10 |
+| VULN-1006 | CVE-2024-5981 | HIGH | 4.7 | 192.168.1.27 |
+| VULN-1007 | CVE-2024-4118 | CRITICAL | 7.5 | 192.168.1.230 |
+
 
 #### 📈 Network Activity Chart
-<img src="outputs/charts/top_source_ips.png" alt="Top Source IPs Chart" width="600">
-
-</td>
-</tr>
-</table>
+![Top Source IPs Chart](outputs/charts/top_source_ips.png)
 
 *This summary is auto-generated.*
 
