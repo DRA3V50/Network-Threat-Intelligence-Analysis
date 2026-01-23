@@ -1,99 +1,95 @@
-from datetime import datetime
 from pathlib import Path
+from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
 
 # Paths
 BUILD_DIR = Path("build")
-OUTPUT_DIR = Path("outputs/logs")
-CHARTS_DIR = Path("outputs/charts")
+OUTPUTS_DIR = Path("outputs")
+CHARTS_DIR = OUTPUTS_DIR / "charts"
+README_PATH = Path("README.md")
 
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 CHARTS_DIR.mkdir(parents=True, exist_ok=True)
 
-# Auto-generated section markers in README
-AUTO_START = "<!-- AUTO-GENERATED-SECTION:START -->"
-AUTO_END = "<!-- AUTO-GENERATED-SECTION:END -->"
+# Limit rows for tables to display in README
+MAX_ROWS = 8
+MIN_ROWS = 3
 
-# Limit for inline tables
-TOP_N = 5
+# Read top source IPs CSV
+top_ips_csv = BUILD_DIR / "pcaps" / "top_source_ips.csv"
+if not top_ips_csv.exists():
+    raise FileNotFoundError(f"{top_ips_csv} not found. Make sure the workflow generates it.")
 
-# Read data
-vulns_df = pd.read_csv(BUILD_DIR / "vulnerabilities" / "vuln_scan_sample.csv").head(TOP_N)
-iocs_df = pd.read_csv(BUILD_DIR / "iocs" / "osint_iocs.csv").head(TOP_N)
-logs_df = pd.read_csv(OUTPUT_DIR / "high_risk_vulns.csv").head(TOP_N)
+top_ips_df = pd.read_csv(top_ips_csv)
 
-# Generate Resident Evil style chart (dark background, red bars)
-top_ips_df = pd.read_csv(CHARTS_DIR / "top_source_ips.csv")  # assuming this exists
+# Truncate rows
+top_ips_display = top_ips_df.head(MAX_ROWS)
+
+# Generate chart
 plt.style.use('dark_background')
-plt.figure(figsize=(6, 4))
-plt.bar(top_ips_df['source_ip'], top_ips_df['count'], color='red', edgecolor='white')
-plt.xticks(rotation=45, ha='right', color='white')
-plt.yticks(color='white')
-plt.ylabel("Connections", color='white')
-plt.title("Top Source IPs", color='white')
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.bar(top_ips_display['source_ip'], top_ips_display['count'], color=['red', 'white'])
+ax.set_xlabel("Source IP")
+ax.set_ylabel("Count")
+ax.set_title("Top Source IPs")
+plt.xticks(rotation=45, ha='right')
 plt.tight_layout()
-chart_file = CHARTS_DIR / "top_source_ips.png"
-plt.savefig(chart_file, dpi=100)
-plt.close()
 
-# Generate Markdown for auto-section
+chart_path = CHARTS_DIR / "top_source_ips.png"
+plt.savefig(chart_path)
+plt.close(fig)
+
+# Read OSINT and Vulnerabilities CSVs (truncate rows)
+iocs_csv = BUILD_DIR / "iocs" / "osint_iocs.csv"
+vulns_csv = BUILD_DIR / "vulnerabilities" / "vuln_scan_sample.csv"
+
+osint_df = pd.read_csv(iocs_csv).head(MAX_ROWS)
+vulns_df = pd.read_csv(vulns_csv).head(MAX_ROWS)
+
+# Prepare Markdown tables
+def df_to_md_table(df: pd.DataFrame) -> str:
+    return df.to_markdown(index=False)
+
+osint_md = df_to_md_table(osint_df)
+vulns_md = df_to_md_table(vulns_df)
+
+# Timestamp
 timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
-md_vulns = vulns_df.to_markdown(index=False)
-md_iocs = iocs_df.to_markdown(index=False)
-md_logs = logs_df.to_markdown(index=False)
-
-auto_section = f"""
-{AUTO_START}
+# Prepare auto-generated block
+auto_block = f"""
+<!-- AUTO-GENERATED-SECTION:START -->
 
 ### **Daily Automated Threat Intelligence Update**
 
 📊 **Timestamp (UTC):** {timestamp}
 
-<table>
-<tr>
-<td width="50%">
-
 #### 🔴 High-Risk Vulnerabilities
-{md_vulns}
-
-</td>
-<td width="50%">
+{vulns_md}
 
 #### 🧪 Top OSINT IOCs
-{md_iocs}
-
-</td>
-</tr>
-<tr>
-<td colspan="2" align="center">
+{osint_md}
 
 #### 📈 Network Activity Chart
-<img src="outputs/charts/top_source_ips.png" alt="Top Source IPs Chart" width="600">
-
-</td>
-</tr>
-</table>
+<img src="{chart_path.as_posix()}" alt="Top Source IPs Chart" width="600">
 
 *This summary is auto-generated.*
 
-{AUTO_END}
+<!-- AUTO-GENERATED-SECTION:END -->
 """
 
-# Read current README
-readme_file = Path("README.md")
-readme_text = readme_file.read_text()
+# Update README.md between markers
+readme_text = README_PATH.read_text()
+start_marker = "<!-- AUTO-GENERATED-SECTION:START -->"
+end_marker = "<!-- AUTO-GENERATED-SECTION:END -->"
 
-# Replace old auto-generated section
-import re
-pattern = re.compile(f"{AUTO_START}.*?{AUTO_END}", re.DOTALL)
-if pattern.search(readme_text):
-    readme_text = pattern.sub(auto_section, readme_text)
+if start_marker in readme_text and end_marker in readme_text:
+    pre = readme_text.split(start_marker)[0]
+    post = readme_text.split(end_marker)[1]
+    new_readme = f"{pre}{auto_block}{post}"
 else:
-    # Append if missing
-    readme_text += "\n" + auto_section
+    # If no markers exist, append to the end
+    new_readme = readme_text + "\n" + auto_block
 
-# Save updated README
-readme_file.write_text(readme_text)
+README_PATH.write_text(new_readme)
 print(f"[+] README.md updated successfully at {timestamp}")
