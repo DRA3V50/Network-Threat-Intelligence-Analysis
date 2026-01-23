@@ -69,11 +69,12 @@ It demonstrates workflows, analysis methods, and outputs that **enable informed 
 
 
 
+
 <!-- AUTO-GENERATED-SECTION:START -->
 
 ### **Daily Automated Threat Intelligence Update**
 
-📊 **Timestamp (UTC):** 2026-01-23 02:53 UTC
+📊 **Timestamp (UTC):** 2026-01-23 03:02 UTC
 
 <table>
 <tr>
@@ -82,10 +83,13 @@ It demonstrates workflows, analysis methods, and outputs that **enable informed 
 #### 🔴 High-Risk Vulnerabilities
 | vuln_id   | cve           | severity   |   risk_score | affected_host   |
 |:----------|:--------------|:-----------|-------------:|:----------------|
-| VULN-1000 | CVE-2024-4344 | LOW        |          3.3 | 192.168.1.197   |
-| VULN-1001 | CVE-2024-4574 | CRITICAL   |          2.2 | 192.168.1.42    |
-| VULN-1002 | CVE-2024-1889 | MEDIUM     |          5.8 | 192.168.1.191   |
-| VULN-1003 | CVE-2024-8425 | CRITICAL   |          1.6 | 192.168.1.181   |
+| VULN-1000 | CVE-2024-6299 | HIGH       |          6.5 | 192.168.1.209   |
+| VULN-1001 | CVE-2024-6223 | LOW        |          8   | 192.168.1.198   |
+| VULN-1002 | CVE-2024-5018 | HIGH       |          6.4 | 192.168.1.218   |
+| VULN-1003 | CVE-2024-2693 | HIGH       |          4.7 | 192.168.1.50    |
+| VULN-1004 | CVE-2024-7041 | CRITICAL   |          6.9 | 192.168.1.134   |
+| VULN-1005 | CVE-2024-8073 | LOW        |          2   | 192.168.1.96    |
+| VULN-1006 | CVE-2024-3517 | HIGH       |          6.1 | 192.168.1.50    |
 
 </td>
 <td width="50%">
@@ -93,11 +97,14 @@ It demonstrates workflows, analysis methods, and outputs that **enable informed 
 #### 🧪 Top OSINT IOCs
 | ioc_type   | ioc_value                        |   confidence | source    |
 |:-----------|:---------------------------------|-------------:|:----------|
-| HASH       | 83cf6c1c391fc541fc3b6015ded5c9d4 |           93 | OSINT-SIM |
-| HASH       | 123197f39457d639977f21f815623f2a |           73 | OSINT-SIM |
-| URL        | http://bad389.example/path       |           92 | OSINT-SIM |
-| DOMAIN     | malicious395.com                 |           61 | OSINT-SIM |
-| DOMAIN     | malicious946.com                 |           94 | OSINT-SIM |
+| IP         | 185.225.130.190                  |           65 | OSINT-SIM |
+| URL        | http://bad878.example/path       |           62 | OSINT-SIM |
+| HASH       | 09311598f7a272bfae6c9a12652933d5 |           84 | OSINT-SIM |
+| URL        | http://bad369.example/path       |           93 | OSINT-SIM |
+| DOMAIN     | malicious791.com                 |           75 | OSINT-SIM |
+| HASH       | 3d86035e6bab5108c9bc6b479ac18b1a |           67 | OSINT-SIM |
+| IP         | 185.12.135.242                   |           70 | OSINT-SIM |
+| URL        | http://bad218.example/path       |           75 | OSINT-SIM |
 
 </td>
 </tr>
@@ -114,6 +121,7 @@ It demonstrates workflows, analysis methods, and outputs that **enable informed 
 *This summary is auto-generated.*
 
 <!-- AUTO-GENERATED-SECTION:END -->
+
 
 
 
