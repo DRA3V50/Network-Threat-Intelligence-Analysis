@@ -112,24 +112,47 @@ The project demonstrates **repeatable, analyst-driven processes** consistent wit
 
 
 
+
 <!-- AUTO-GENERATED-SECTION:START -->
 
 ### **Daily Automated Threat Intelligence Update**
 
-📊 **Timestamp (UTC):** 2026-01-22 03:38 UTC
+📊 **Timestamp (UTC):** 2026-01-23 02:01 UTC
 
 <table>
 <tr>
 <td width="50%">
 
 #### 🔴 High-Risk Vulnerabilities
-*Error reading vuln_scan_sample.csv: `Import tabulate` failed.  Use pip or conda to install the tabulate package.*
+| vuln_id   | cve           | severity   |   risk_score | affected_host   |
+|:----------|:--------------|:-----------|-------------:|:----------------|
+| VULN-1000 | CVE-2024-6201 | HIGH       |          7.6 | 192.168.1.167   |
+| VULN-1001 | CVE-2024-7804 | HIGH       |          5.9 | 192.168.1.229   |
+| VULN-1002 | CVE-2024-8205 | MEDIUM     |          2.6 | 192.168.1.120   |
+| VULN-1003 | CVE-2024-3628 | HIGH       |          1.1 | 192.168.1.189   |
+| VULN-1004 | CVE-2024-1284 | CRITICAL   |          8.7 | 192.168.1.87    |
+| VULN-1005 | CVE-2024-5426 | LOW        |          3   | 192.168.1.36    |
+| VULN-1006 | CVE-2024-9932 | MEDIUM     |          2.8 | 192.168.1.103   |
+| VULN-1007 | CVE-2024-1362 | LOW        |          6.2 | 192.168.1.187   |
+| VULN-1008 | CVE-2024-2777 | LOW        |          8.8 | 192.168.1.13    |
+| VULN-1009 | CVE-2024-5323 | CRITICAL   |          6   | 192.168.1.158   |
 
 </td>
 <td width="50%">
 
 #### 🧪 Top OSINT IOCs
-*Error reading osint_iocs.csv: `Import tabulate` failed.  Use pip or conda to install the tabulate package.*
+| ioc_type   | ioc_value                        |   confidence | source    |
+|:-----------|:---------------------------------|-------------:|:----------|
+| IP         | 185.70.61.236                    |           73 | OSINT-SIM |
+| IP         | 185.3.224.145                    |           73 | OSINT-SIM |
+| DOMAIN     | malicious177.com                 |           92 | OSINT-SIM |
+| IP         | 185.119.107.144                  |           66 | OSINT-SIM |
+| IP         | 185.112.31.202                   |           86 | OSINT-SIM |
+| HASH       | 2e03b46f272c23db278e44484a6f3384 |           76 | OSINT-SIM |
+| HASH       | 97e3525141ea737ddeb479cc2e1243d1 |           66 | OSINT-SIM |
+| DOMAIN     | malicious568.com                 |           81 | OSINT-SIM |
+| DOMAIN     | malicious290.com                 |           74 | OSINT-SIM |
+| HASH       | 84a9f881cd866bd22fa85235ea1d6d55 |           93 | OSINT-SIM |
 
 </td>
 </tr>
@@ -146,6 +169,7 @@ The project demonstrates **repeatable, analyst-driven processes** consistent wit
 *This summary is auto-generated.*
 
 <!-- AUTO-GENERATED-SECTION:END -->
+
 
 
 
