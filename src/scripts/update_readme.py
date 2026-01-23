@@ -1,55 +1,52 @@
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 import pandas as pd
 
-# ----------------------------
-# CONFIG
-# ----------------------------
 README_PATH = Path("README.md")
 
-# CSV paths
-IOCS_CSV = Path("build/iocs/osint_iocs.csv")
-VULNS_CSV = Path("build/vulnerabilities/vuln_scan_sample.csv")
+IOC_PATH = Path("build/iocs/osint_iocs.csv")
+VULN_PATH = Path("build/vulnerabilities/vuln_scan_sample.csv")
+HIGH_RISK_PATH = Path("outputs/logs/high_risk_vulns.csv")
+CHART_PATH = "outputs/charts/top_source_ips.png"
 
-# Chart path
-CHART_PATH = Path("outputs/charts/top_source_ips.png")
-
-# Auto-section markers
-MARKER_START = "<!-- AUTO-GENERATED-SECTION:START -->"
-MARKER_END = "<!-- AUTO-GENERATED-SECTION:END -->"
-
-# How many rows to show in summary tables
-TOP_N = 10
-
-# ----------------------------
-# HELPER FUNCTIONS
-# ----------------------------
-def read_csv_preview(csv_path, top_n=TOP_N):
-    """Read CSV and return top_n rows as markdown table."""
-    if not csv_path.exists():
-        return f"*CSV not found: {csv_path.name}*"
-    try:
-        df = pd.read_csv(csv_path)
-        if df.empty:
-            return f"*No data in {csv_path.name}*"
-        df_preview = df.head(top_n)
-        return df_preview.to_markdown(index=False)
-    except Exception as e:
-        return f"*Error reading {csv_path.name}: {e}*"
+START_MARKER = "<!-- AUTO-GENERATED-SECTION:START -->"
+END_MARKER = "<!-- AUTO-GENERATED-SECTION:END -->"
 
 
-def generate_auto_section():
-    """Generate the HTML + markdown dashboard for the README."""
+def load_csv(path):
+    if path.exists():
+        return pd.read_csv(path)
+    return pd.DataFrame()
+
+
+def main():
     timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
-    # Tables as markdown
-    vulns_table = read_csv_preview(VULNS_CSV)
-    iocs_table = read_csv_preview(IOCS_CSV)
+    iocs_df = load_csv(IOC_PATH)
+    vulns_df = load_csv(VULN_PATH)
+    high_risk_df = load_csv(HIGH_RISK_PATH)
 
-    # HTML table for side-by-side layout with chart below
-    section = f"""
-{MARKER_START}
+    # 🔒 LIMIT ROWS (THIS IS THE KEY)
+    if not iocs_df.empty:
+        iocs_df = (
+            iocs_df.sort_values("confidence", ascending=False)
+            .head(8)
+        )
 
+    if not vulns_df.empty:
+        vulns_df = (
+            vulns_df.sort_values("risk_score", ascending=False)
+            .head(6)
+        )
+
+    if not high_risk_df.empty:
+        high_risk_df = high_risk_df.head(4)
+
+    iocs_table = iocs_df.to_markdown(index=False)
+    vulns_table = vulns_df.to_markdown(index=False)
+    high_risk_table = high_risk_df.to_markdown(index=False)
+
+    auto_section = f"""
 ### **Daily Automated Threat Intelligence Update**
 
 📊 **Timestamp (UTC):** {timestamp}
@@ -59,7 +56,7 @@ def generate_auto_section():
 <td width="50%">
 
 #### 🔴 High-Risk Vulnerabilities
-{vulns_table}
+{high_risk_table}
 
 </td>
 <td width="50%">
@@ -73,43 +70,32 @@ def generate_auto_section():
 <td colspan="2" align="center">
 
 #### 📈 Network Activity Chart
-<img src="{CHART_PATH}" alt="Top Source IPs Chart" width="600">
+<img src="{CHART_PATH}" alt="Top Source IPs Chart" width="500">
 
 </td>
 </tr>
 </table>
 
 *This summary is auto-generated.*
-
-{MARKER_END}
 """
-    return section
 
+    readme = README_PATH.read_text(encoding="utf-8")
 
-def update_readme():
-    """Replace the auto-generated section in README."""
-    if not README_PATH.exists():
-        print(f"[!] README.md not found at {README_PATH}")
-        return
+    if START_MARKER not in readme or END_MARKER not in readme:
+        raise RuntimeError("README markers not found")
 
-    readme_text = README_PATH.read_text(encoding="utf-8")
+    new_readme = (
+        readme.split(START_MARKER)[0]
+        + START_MARKER
+        + auto_section
+        + "\n"
+        + END_MARKER
+        + readme.split(END_MARKER)[1]
+    )
 
-    # Ensure markers exist
-    if MARKER_START not in readme_text or MARKER_END not in readme_text:
-        print("[!] Auto-section markers not found in README, inserting them at end.")
-        readme_text += f"\n{MARKER_START}\n{MARKER_END}\n"
-
-    # Split and replace
-    before, remainder = readme_text.split(MARKER_START, 1)
-    _, after = remainder.split(MARKER_END, 1)
-
-    new_section = generate_auto_section()
-
-    updated_text = before + new_section + after
-    README_PATH.write_text(updated_text, encoding="utf-8")
-    print("[+] README.md updated successfully.")
+    README_PATH.write_text(new_readme, encoding="utf-8")
+    print("[+] README updated successfully")
 
 
 if __name__ == "__main__":
-    update_readme()
-
+    main()
