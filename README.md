@@ -67,50 +67,44 @@ It demonstrates workflows, analysis methods, and outputs that **enable informed 
 > This section is dynamically updated by automated workflows.  
 > **Do not edit content between the markers below.**
 
+
 <!-- AUTO-GENERATED-SECTION:START -->
+
 ### **Daily Automated Threat Intelligence Update**
 
-📊 **Timestamp (UTC):** 2026-01-23 02:40 UTC
-
-<table>
-<tr>
-<td width="50%">
+📊 **Timestamp (UTC):** 2026-01-23 02:49 UTC
 
 #### 🔴 High-Risk Vulnerabilities
-| Vulnerability   |   Severity |
-|:----------------|-----------:|
-| CVE-2025-1234   |          9 |
-
-</td>
-<td width="50%">
+| vuln_id   | cve           | severity   |   risk_score | affected_host   |
+|:----------|:--------------|:-----------|-------------:|:----------------|
+| VULN-1000 | CVE-2024-7619 | CRITICAL   |          4.7 | 192.168.1.173   |
+| VULN-1001 | CVE-2024-4464 | MEDIUM     |          3.4 | 192.168.1.85    |
+| VULN-1002 | CVE-2024-9560 | HIGH       |          5.6 | 192.168.1.237   |
+| VULN-1003 | CVE-2024-9229 | MEDIUM     |          2.2 | 192.168.1.231   |
+| VULN-1004 | CVE-2024-3227 | MEDIUM     |          6.6 | 192.168.1.19    |
+| VULN-1005 | CVE-2024-3516 | HIGH       |          1.1 | 192.168.1.99    |
+| VULN-1006 | CVE-2024-9719 | HIGH       |          5.1 | 192.168.1.164   |
+| VULN-1007 | CVE-2024-4466 | HIGH       |          2.4 | 192.168.1.71    |
 
 #### 🧪 Top OSINT IOCs
 | ioc_type   | ioc_value                        |   confidence | source    |
 |:-----------|:---------------------------------|-------------:|:----------|
-| IP         | 185.108.203.207                  |           95 | OSINT-SIM |
-| HASH       | 3c6519d70af3eb1e31031361da3ab091 |           94 | OSINT-SIM |
-| DOMAIN     | malicious747.com                 |           94 | OSINT-SIM |
-| IP         | 185.164.203.79                   |           93 | OSINT-SIM |
-| HASH       | d948eb951975da2ef1d37a2b532147c1 |           93 | OSINT-SIM |
-| IP         | 185.166.126.34                   |           92 | OSINT-SIM |
-| IP         | 185.102.53.1                     |           91 | OSINT-SIM |
-| URL        | http://bad799.example/path       |           91 | OSINT-SIM |
-
-</td>
-</tr>
-<tr>
-<td colspan="2" align="center">
+| HASH       | 747eece2edf5e946bc8ef1a526b5d13e |           88 | OSINT-SIM |
+| DOMAIN     | malicious470.com                 |           71 | OSINT-SIM |
+| URL        | http://bad112.example/path       |           95 | OSINT-SIM |
+| HASH       | a61e85f9cad0d84406c47cd1219f1420 |           78 | OSINT-SIM |
+| HASH       | 477cff3a01d716fece59a2f19dd96ed9 |           77 | OSINT-SIM |
+| URL        | http://bad935.example/path       |           66 | OSINT-SIM |
+| HASH       | 29bacd7ab1a46bb147380fa59f933959 |           61 | OSINT-SIM |
+| IP         | 185.158.173.130                  |           65 | OSINT-SIM |
 
 #### 📈 Network Activity Chart
-<img src="outputs/charts/top_source_ips.png" alt="Top Source IPs Chart" width="500">
-
-</td>
-</tr>
-</table>
+<img src="outputs/charts/top_source_ips.png" alt="Top Source IPs Chart" width="600">
 
 *This summary is auto-generated.*
 
 <!-- AUTO-GENERATED-SECTION:END -->
+
 
 ---
 
