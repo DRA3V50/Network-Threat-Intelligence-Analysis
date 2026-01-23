@@ -68,6 +68,48 @@ It demonstrates workflows, analysis methods, and outputs that **enable informed 
 > **Do not edit content between the markers below.**
 
 <!-- AUTO-GENERATED-SECTION:START -->
+### **Daily Automated Threat Intelligence Update**
+
+📊 **Timestamp (UTC):** 2026-01-23 02:40 UTC
+
+<table>
+<tr>
+<td width="50%">
+
+#### 🔴 High-Risk Vulnerabilities
+| Vulnerability   |   Severity |
+|:----------------|-----------:|
+| CVE-2025-1234   |          9 |
+
+</td>
+<td width="50%">
+
+#### 🧪 Top OSINT IOCs
+| ioc_type   | ioc_value                        |   confidence | source    |
+|:-----------|:---------------------------------|-------------:|:----------|
+| IP         | 185.108.203.207                  |           95 | OSINT-SIM |
+| HASH       | 3c6519d70af3eb1e31031361da3ab091 |           94 | OSINT-SIM |
+| DOMAIN     | malicious747.com                 |           94 | OSINT-SIM |
+| IP         | 185.164.203.79                   |           93 | OSINT-SIM |
+| HASH       | d948eb951975da2ef1d37a2b532147c1 |           93 | OSINT-SIM |
+| IP         | 185.166.126.34                   |           92 | OSINT-SIM |
+| IP         | 185.102.53.1                     |           91 | OSINT-SIM |
+| URL        | http://bad799.example/path       |           91 | OSINT-SIM |
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="center">
+
+#### 📈 Network Activity Chart
+<img src="outputs/charts/top_source_ips.png" alt="Top Source IPs Chart" width="500">
+
+</td>
+</tr>
+</table>
+
+*This summary is auto-generated.*
+
 <!-- AUTO-GENERATED-SECTION:END -->
 
 ---
@@ -157,9 +199,4 @@ Analysis artifacts, correlated indicators, and visual summaries are refreshed au
 </table>
 
 *This summary is auto-generated.*
-
-<!-- AUTO-GENERATED-SECTION:END -->
-
-
-
 
