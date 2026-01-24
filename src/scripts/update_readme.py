@@ -6,11 +6,11 @@ from datetime import datetime
 # ================= CONFIG =================
 MIN_ROWS = 3
 MAX_ROWS = 8  # maximum rows for CSVs and README
-IOCS_CSV = Path("iocs/osint_iocs.csv")
-VULN_CSV = Path("vulnerabilities/vuln_scan_sample.csv")
-TOP_IPS_CSV = Path("top_source_ips.csv")
-CHART_FILE = Path("top_source_ips.png")
-README_FILE = Path("README.md")
+# Paths for CSVs and chart (all under build/)
+IOCS_CSV = Path("build/iocs/osint_iocs.csv")
+VULN_CSV = Path("build/vulnerabilities/vuln_scan_sample.csv")
+TOP_IPS_CSV = Path("build/top_source_ips.csv")
+CHART_FILE = Path("build/top_source_ips.png")
 # ==========================================
 
 def trim_and_save_csv(csv_path, sort_col=None):
