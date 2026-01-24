@@ -1,21 +1,30 @@
-import os
 import pandas as pd
+from pathlib import Path
 
-def prioritize_vulns():
-    vuln_file = "data/vulnerabilities/vuln_scan_sample.csv"
-    os.makedirs(os.path.dirname(vuln_file), exist_ok=True)
+OUTPUT_DIR = Path("build/vulnerabilities")
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    if not os.path.exists(vuln_file) or os.path.getsize(vuln_file) == 0:
-        pd.DataFrame({
-            "Host": ["192.168.1.100"],
-            "Vulnerability": ["Sample Vulnerability"],
-            "Severity": ["High"]
-        }).to_csv(vuln_file, index=False)
+OUTPUT_FILE = OUTPUT_DIR / "vuln_scan_sample.csv"
 
-    vulns = pd.read_csv(vuln_file)
-    print(f"[+] Loaded {len(vulns)} vulnerabilities")
+def generate_vulnerabilities():
+    data = [
+        ("VULN-1001", "CVE-2024-7454", "CRITICAL", 9.6, "192.168.1.211"),
+        ("VULN-1002", "CVE-2024-8975", "HIGH", 9.2, "192.168.1.225"),
+        ("VULN-1003", "CVE-2024-9229", "CRITICAL", 8.9, "192.168.1.41"),
+        ("VULN-1004", "CVE-2024-3153", "MEDIUM", 6.4, "192.168.1.242"),
+        ("VULN-1005", "CVE-2024-4382", "MEDIUM", 5.8, "192.168.1.29"),
+        ("VULN-1006", "CVE-2024-9204", "LOW", 4.2, "192.168.1.214"),
+        ("VULN-1007", "CVE-2024-1362", "LOW", 3.1, "192.168.1.187"),
+    ]
 
-    output_file = "outputs/logs/prioritized_vulns.csv"
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    vulns.to_csv(output_file, index=False)
-    print(f"[+] Vulnerabilities prioritized and saved to {output_file}")
+    df = pd.DataFrame(
+        data,
+        columns=["vuln_id", "cve", "severity", "risk_score", "affected_host"]
+    )
+
+    df = df.sort_values("risk_score", ascending=False).head(7)
+
+    df.to_csv(OUTPUT_FILE, index=False)
+
+if __name__ == "__main__":
+    generate_vulnerabilities()
