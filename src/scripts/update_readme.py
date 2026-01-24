@@ -1,118 +1,105 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import random
 from pathlib import Path
-import re
+import matplotlib.pyplot as plt
 from datetime import datetime
 
-# ----------------------------
-# Configuration
-# ----------------------------
-BUILD_DIR = Path("build")
-IOCS_CSV = BUILD_DIR / "iocs/osint_iocs.csv"
-VULNS_CSV = BUILD_DIR / "vulnerabilities/vuln_scan_sample.csv"
-CHARTS_DIR = Path("outputs/charts")
-README_FILE = Path("README.md")
+# --- Config Paths ---
+BASE_DIR = Path(__file__).resolve().parent.parent
+BUILD_DIR = BASE_DIR / "build"
+IOCS_CSV = BUILD_DIR / "iocs" / "osint_iocs.csv"
+VULN_CSV = BUILD_DIR / "vulnerabilities" / "vuln_scan_sample.csv"
+CHARTS_DIR = BASE_DIR / "outputs" / "charts"
+README_FILE = BASE_DIR / "README.md"
 
-# Ensure chart directory exists
 CHARTS_DIR.mkdir(parents=True, exist_ok=True)
 
-# ----------------------------
-# Functions
-# ----------------------------
-def limit_rows(df, min_rows=3, max_rows=10, sort_column=None):
-    """Sort by column descending and limit to random rows between min_rows and max_rows."""
-    if sort_column:
-        df = df.sort_values(by=sort_column, ascending=False)
-    n_rows = random.randint(min_rows, max_rows)
-    return df.head(n_rows)
+# --- Parameters ---
+MAX_ROWS = 10  # max rows to show in files & README
 
-def generate_bar_chart(df, x_col, y_col, chart_file, title):
-    plt.figure(figsize=(6, 4))
-    plt.bar(df[x_col], df[y_col], color="red", edgecolor="white")
-    plt.xticks(rotation=45, ha="right")
+# --- Helper: Generate Bar Chart ---
+def generate_chart(df, col_label, value_label, chart_file, title, color="red"):
+    # Aggregate if necessary
+    chart_data = df.groupby(col_label)[value_label].sum().sort_values(ascending=False)
+    plt.figure(figsize=(8, 5))
+    chart_data.plot(kind="bar", color=color, edgecolor="white")
     plt.title(title)
+    plt.ylabel(value_label)
+    plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
     plt.savefig(chart_file)
     plt.close()
 
-def dataframe_to_markdown(df):
-    """Convert a DataFrame to a markdown table string."""
-    return df.to_markdown(index=False)
-
-# ----------------------------
-# Load & process CSVs
-# ----------------------------
-# Load OSINT IOCs
+# --- Read CSVs ---
 iocs_df = pd.read_csv(IOCS_CSV)
-iocs_df = limit_rows(iocs_df, min_rows=3, max_rows=10, sort_column="confidence")
-iocs_df.to_csv(IOCS_CSV, index=False)  # overwrite with limited rows
+vulns_df = pd.read_csv(VULN_CSV)
 
-# Load Vulnerabilities
-vulns_df = pd.read_csv(VULNS_CSV)
-vulns_df = limit_rows(vulns_df, min_rows=3, max_rows=10, sort_column="risk_score")
-vulns_df.to_csv(VULNS_CSV, index=False)  # overwrite with limited rows
+# --- Limit to MAX_ROWS sorted by severity/risk ---
+severity_order = {"CRITICAL": 4, "HIGH": 3, "MEDIUM": 2, "LOW": 1}
+vulns_df["severity_rank"] = vulns_df["severity"].map(severity_order)
+vulns_df = vulns_df.sort_values(by="severity_rank", ascending=False).head(MAX_ROWS)
 
-# ----------------------------
-# Generate chart
-# ----------------------------
-top_ips_csv = BUILD_DIR / "top_source_ips.csv"
-if top_ips_csv.exists():
-    top_ips_df = pd.read_csv(top_ips_csv)
-    top_ips_df = limit_rows(top_ips_df, min_rows=3, max_rows=10, sort_column="count")
-    chart_file = CHARTS_DIR / "top_source_ips.png"
-    generate_bar_chart(top_ips_df, "ip", "count", chart_file, "Top Source IPs Chart")
-else:
-    chart_file = None
+iocs_df = iocs_df.sort_values(by="confidence", ascending=False).head(MAX_ROWS)
 
-# ----------------------------
-# Prepare README content
-# ----------------------------
-timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+# --- Add emojis to IOC types ---
+emoji_map = {"IP": "🌐", "DOMAIN": "🔗", "HASH": "🔒", "URL": "🔗"}
+iocs_df["emoji"] = iocs_df["ioc_type"].map(emoji_map)
 
-# Markdown tables
-iocs_table = dataframe_to_markdown(iocs_df)
-vulns_table = dataframe_to_markdown(vulns_df)
+# --- Write trimmed CSVs back to build folders ---
+iocs_df.to_csv(IOCS_CSV, index=False)
+vulns_df.to_csv(VULN_CSV, index=False)
 
-chart_markdown = f"![Top Source IPs Chart]({chart_file})" if chart_file else "No chart available"
+# --- Generate Network Activity Chart (example: top IPs by confidence) ---
+top_ips_df = iocs_df[iocs_df["ioc_type"] == "IP"].copy()
+top_ips_df["count"] = 1  # simple count per IP
+chart_file = CHARTS_DIR / "top_source_ips.png"
+generate_chart(top_ips_df, "ioc_value", "count", chart_file, "Top Source IPs Chart")
 
-new_section = f"""<!-- AUTO-GENERATED-SECTION:START -->
+# --- Generate Markdown tables ---
+def df_to_md_table(df, columns):
+    md = "| " + " | ".join(columns) + " |\n"
+    md += "| " + " | ".join([":---:" for _ in columns]) + " |\n"
+    for _, row in df.iterrows():
+        md += "| " + " | ".join(str(row[col]) for col in columns) + " |\n"
+    return md
+
+# IOC table with emoji
+iocs_md = df_to_md_table(iocs_df, ["emoji", "ioc_type", "ioc_value", "confidence", "source"])
+
+# Vulnerabilities table
+vulns_md = df_to_md_table(vulns_df, ["vuln_id", "cve", "severity", "risk_score", "affected_host"])
+
+# --- Update README ---
+with open(README_FILE, "r") as f:
+    readme = f.read()
+
+auto_section = f"""
+<!-- AUTO-GENERATED-SECTION:START -->
 
 ### **Daily Automated Threat Intelligence Update**
 
-📊 **Timestamp (UTC):** {timestamp}
+📊 **Timestamp (UTC):** {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}
 
-#### 🌐 Top OSINT IOCs
-{iocs_table}
+#### 🧪 Top OSINT IOCs
+{iocs_md}
 
 #### 🔴 High-Risk Vulnerabilities
-{vulns_table}
+{vulns_md}
 
 #### 📈 Network Activity Chart
-{chart_markdown}
+![Top Source IPs Chart](outputs/charts/top_source_ips.png)
 
 *This summary is auto-generated.*
 
 <!-- AUTO-GENERATED-SECTION:END -->
 """
 
-# ----------------------------
-# Update README
-# ----------------------------
-if README_FILE.exists():
-    readme_content = README_FILE.read_text()
-    # Replace existing section or append if not found
-    if "<!-- AUTO-GENERATED-SECTION:START -->" in readme_content:
-        updated_content = re.sub(
-            r"<!-- AUTO-GENERATED-SECTION:START -->.*?<!-- AUTO-GENERATED-SECTION:END -->",
-            new_section,
-            readme_content,
-            flags=re.DOTALL
-        )
-    else:
-        updated_content = readme_content + "\n" + new_section
-
-    README_FILE.write_text(updated_content)
-    print("README updated successfully.")
+# Replace previous auto section or append if missing
+if "<!-- AUTO-GENERATED-SECTION:START -->" in readme:
+    readme = readme.split("<!-- AUTO-GENERATED-SECTION:START -->")[0] + auto_section
 else:
-    print("README.md not found.")
+    readme += "\n" + auto_section
+
+with open(README_FILE, "w") as f:
+    f.write(readme)
+
+print("README and build files updated successfully!")
