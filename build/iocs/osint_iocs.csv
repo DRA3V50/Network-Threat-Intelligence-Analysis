@@ -1,51 +1,11 @@
 ioc_type,ioc_value,confidence,source
-URL,http://bad855.example/path,89,OSINT-SIM
-IP,185.21.55.35,74,OSINT-SIM
-IP,185.158.1.151,93,OSINT-SIM
-DOMAIN,malicious774.com,73,OSINT-SIM
-IP,185.249.159.170,86,OSINT-SIM
-URL,http://bad706.example/path,87,OSINT-SIM
-URL,http://bad488.example/path,69,OSINT-SIM
-HASH,1490923e4af21f58ea114075b272c33a,81,OSINT-SIM
-IP,185.218.236.193,70,OSINT-SIM
-IP,185.43.188.3,78,OSINT-SIM
-URL,http://bad152.example/path,64,OSINT-SIM
-IP,185.12.160.163,89,OSINT-SIM
-IP,185.94.29.232,61,OSINT-SIM
-URL,http://bad297.example/path,71,OSINT-SIM
-DOMAIN,malicious347.com,95,OSINT-SIM
-URL,http://bad465.example/path,84,OSINT-SIM
-URL,http://bad536.example/path,67,OSINT-SIM
-DOMAIN,malicious962.com,82,OSINT-SIM
-IP,185.224.59.235,84,OSINT-SIM
-URL,http://bad170.example/path,92,OSINT-SIM
-HASH,739dde197f81927468a11785393d9e73,82,OSINT-SIM
-DOMAIN,malicious239.com,92,OSINT-SIM
-DOMAIN,malicious631.com,83,OSINT-SIM
-IP,185.160.29.38,80,OSINT-SIM
-HASH,69f977dc898eca222635e003c16a0de4,91,OSINT-SIM
-IP,185.242.164.12,85,OSINT-SIM
-DOMAIN,malicious996.com,66,OSINT-SIM
-URL,http://bad805.example/path,62,OSINT-SIM
-HASH,1976c0ff956f60d75bdbe762d117f191,66,OSINT-SIM
-DOMAIN,malicious693.com,71,OSINT-SIM
-URL,http://bad978.example/path,93,OSINT-SIM
-HASH,05dab513c6bd1859e32fd714fac182d4,71,OSINT-SIM
-URL,http://bad315.example/path,88,OSINT-SIM
-DOMAIN,malicious835.com,66,OSINT-SIM
-IP,185.192.31.160,85,OSINT-SIM
-URL,http://bad241.example/path,74,OSINT-SIM
-HASH,1d6b1b1f9bbf7b232085ecd0bc370a08,95,OSINT-SIM
-IP,185.164.213.173,60,OSINT-SIM
-IP,185.49.39.178,67,OSINT-SIM
-IP,185.60.25.126,67,OSINT-SIM
-DOMAIN,malicious283.com,84,OSINT-SIM
-DOMAIN,malicious382.com,68,OSINT-SIM
-IP,185.230.5.15,86,OSINT-SIM
-IP,185.236.224.111,89,OSINT-SIM
-URL,http://bad558.example/path,85,OSINT-SIM
-HASH,73d416a455bba7ad65c540f1513c6a67,61,OSINT-SIM
-DOMAIN,malicious660.com,70,OSINT-SIM
-IP,185.134.217.109,94,OSINT-SIM
-DOMAIN,malicious622.com,81,OSINT-SIM
-HASH,85b779fc8edb1f960ff77a622e370782,80,OSINT-SIM
+DOMAIN,malicious212.com,93,Open-Source Intelligence
+IP,185.41.109.131,91,Open-Source Intelligence
+IP,185.88.135.217,90,Open-Source Intelligence
+HASH,f7b2bc98a00aa0804145b1926b8159a2,89,Open-Source Intelligence
+URL,http://bad516.example/path,89,Open-Source Intelligence
+HASH,ca1cfa3368a447dcafe86241d82daedb,89,Open-Source Intelligence
+DOMAIN,malicious828.com,88,Open-Source Intelligence
+HASH,eb5a7c60b766a41a39a538bf66d44367,85,Open-Source Intelligence
+URL,http://bad626.example/path,85,Open-Source Intelligence
+HASH,5bdb09054390ed6b240373428e1dc45d,84,Open-Source Intelligence
