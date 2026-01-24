@@ -1,86 +1,71 @@
-from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
+from pathlib import Path
 from datetime import datetime
 
-# ----------------------------
-# Setup paths
-# ----------------------------
-BASE_DIR = Path(__file__).resolve().parent.parent.parent  # Go to repo root
+# -----------------------------
+# Config Paths
+# -----------------------------
+BASE_DIR = Path(__file__).resolve().parent.parent
 BUILD_DIR = BASE_DIR / "build"
-IOCS_DIR = BUILD_DIR / "iocs"
-VULN_DIR = BUILD_DIR / "vulnerabilities"
-CHARTS_DIR = BUILD_DIR / "charts"
-
-# Ensure directories exist
-IOCS_DIR.mkdir(parents=True, exist_ok=True)
-VULN_DIR.mkdir(parents=True, exist_ok=True)
+IOCS_CSV = BUILD_DIR / "iocs/osint_iocs.csv"
+VULNS_CSV = BUILD_DIR / "vulnerabilities/vuln_scan_sample.csv"
+CHARTS_DIR = BASE_DIR / "outputs/charts"
 CHARTS_DIR.mkdir(parents=True, exist_ok=True)
+CHART_FILE = CHARTS_DIR / "top_source_ips.png"
+README_FILE = BASE_DIR / "README.md"
 
-# CSV files
-IOCS_CSV = IOCS_DIR / "osint_iocs.csv"
-VULN_CSV = VULN_DIR / "vuln_scan_sample.csv"
+# Max rows to show in both folder and README
+MAX_ROWS = 10
 
-# README path
-README_PATH = BASE_DIR / "README.md"
+# -----------------------------
+# Read CSVs
+# -----------------------------
+iocs_df = pd.read_csv(IOCS_CSV)
+vulns_df = pd.read_csv(VULNS_CSV)
 
-# ----------------------------
-# Function to read and trim CSVs
-# ----------------------------
-def trim_top(df: pd.DataFrame, sort_col: str, min_rows=3, max_rows=10, ascending=False):
-    """Sort by column and return between min_rows and max_rows"""
-    df_sorted = df.sort_values(by=sort_col, ascending=ascending)
-    row_count = min(max(len(df_sorted), min_rows), max_rows)
-    return df_sorted.head(row_count)
+# Keep only top N rows by severity / confidence
+iocs_df = iocs_df.sort_values(by="confidence", ascending=False).head(MAX_ROWS)
+vulns_df = vulns_df.sort_values(by="risk_score", ascending=False).head(MAX_ROWS)
 
-# ----------------------------
-# Generate chart
-# ----------------------------
-def generate_chart(df: pd.DataFrame, value_col: str, chart_file: Path):
-    plt.figure(figsize=(6, 4))
-    plt.bar(df.index.astype(str), df[value_col], color="#e63946", edgecolor="black")
-    plt.xlabel("Source IP")
-    plt.ylabel("Count")
-    plt.title("Top Source IPs Chart")
+# Save truncated CSVs back to build (folders and README match)
+iocs_df.to_csv(IOCS_CSV, index=False)
+vulns_df.to_csv(VULNS_CSV, index=False)
+
+# -----------------------------
+# Generate Network Chart
+# -----------------------------
+# Example: count top source IPs
+if "ip" in iocs_df.columns:
+    top_ips = iocs_df["ioc_value"].value_counts().head(MAX_ROWS)
+    colors = []
+    for i, row in iocs_df.iterrows():
+        # Severity-based coloring for visualization
+        if row["confidence"] >= 85:
+            colors.append("#d32f2f")  # red = high
+        elif row["confidence"] >= 70:
+            colors.append("#f57c00")  # orange = medium
+        else:
+            colors.append("#fbc02d")  # yellow = low
+    plt.figure(figsize=(8, 5))
+    plt.bar(top_ips.index, top_ips.values, color=colors, edgecolor="black")
     plt.xticks(rotation=45, ha="right")
+    plt.title("Network Traffic Summary by Top Source Indicators", fontsize=12)
+    plt.ylabel("Occurrences")
     plt.tight_layout()
-    plt.savefig(chart_file)
+    plt.savefig(CHART_FILE)
     plt.close()
 
-# ----------------------------
-# Main
-# ----------------------------
-if __name__ == "__main__":
-    # Read CSVs
-    iocs_df = pd.read_csv(IOCS_CSV)
-    vulns_df = pd.read_csv(VULN_CSV)
+# -----------------------------
+# Generate README Section
+# -----------------------------
+timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
-    # Trim CSVs to top 3-10 rows and save back
-    top_iocs = trim_top(iocs_df, sort_col="confidence", min_rows=3, max_rows=10, ascending=False)
-    top_iocs.to_csv(IOCS_CSV, index=False)
+iocs_table_md = iocs_df.to_markdown(index=False)
+vulns_table_md = vulns_df.to_markdown(index=False)
 
-    top_vulns = trim_top(vulns_df, sort_col="risk_score", min_rows=3, max_rows=10, ascending=False)
-    top_vulns.to_csv(VULN_CSV, index=False)
-
-    # ----------------------------
-    # Generate top source IP chart
-    # ----------------------------
-    if "ip" in iocs_df.columns:
-        ip_counts = iocs_df["ip"].value_counts()
-        top_ips = ip_counts.head(10)
-        chart_file = CHARTS_DIR / "top_source_ips.png"
-        generate_chart(top_ips.to_frame(name="count"), value_col="count", chart_file=chart_file)
-
-    # ----------------------------
-    # Update README
-    # ----------------------------
-    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-
-    # Build Markdown tables
-    iocs_md = top_iocs.to_markdown(index=False)
-    vulns_md = top_vulns.to_markdown(index=False)
-
-    readme_content = f"""# Network-Threat-Intelligence-Analysis
+readme_content = f"""
+# Network-Threat-Intelligence-Analysis
 
 📊 Automated defensive network analysis with OSINT enrichment and threat correlation
 
@@ -88,28 +73,48 @@ if __name__ == "__main__":
 
 ## 🗂 Overview
 
-This repository demonstrates a Blue Team–focused approach to analyzing network activity, open-source threat intelligence, and vulnerability data.  
+This repository demonstrates a Blue Team–focused approach to analyzing network activity,  
+open-source threat intelligence, and vulnerability data in support of defensive cyber operations.
 
 ---
 
 ## 📊 Daily Analysis Snapshot
 
-> This section is auto-generated. Do not edit manually.
+> This section is dynamically updated by automated workflows.  
+> **Do not edit content between the markers below.**
 
-### 🧪 Top OSINT IOCs
-{ iocs_md }
+<!-- AUTO-GENERATED-SECTION:START -->
 
-### 🔴 High-Risk Vulnerabilities
-{ vulns_md }
+### Indicators of Compromise (OSINT) ⚠️
+**Timestamp (UTC): {timestamp}**
+{iocs_table_md}
 
-### 📈 Network Activity Chart
-![Top Source IPs Chart]({CHARTS_DIR.name}/top_source_ips.png)
+### Critical & High-Risk Vulnerabilities 🛡️
+**Timestamp (UTC): {timestamp}**
+{vulns_table_md}
 
-*Updated: {timestamp}*
+### Network Traffic Summary 🌐
+![Network Traffic Summary](outputs/charts/top_source_ips.png)
+
+*This summary is auto-generated.*
+
+<!-- AUTO-GENERATED-SECTION:END -->
 """
 
-    # Write README
-    README_PATH.write_text(readme_content, encoding="utf-8")
+# Write README
+with open(README_FILE, "r") as f:
+    existing = f.read()
 
-    print(f"README updated with {len(top_iocs)} IOC rows and {len(top_vulns)} vulnerability rows.")
-    print(f"Chart saved to {CHARTS_DIR / 'top_source_ips.png'}")
+# Replace old auto-generated section
+import re
+new_readme = re.sub(
+    r"<!-- AUTO-GENERATED-SECTION:START -->.*<!-- AUTO-GENERATED-SECTION:END -->",
+    readme_content,
+    existing,
+    flags=re.DOTALL,
+)
+
+with open(README_FILE, "w") as f:
+    f.write(new_readme)
+
+print("README and charts updated successfully.")
