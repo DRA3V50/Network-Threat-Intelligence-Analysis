@@ -4,6 +4,7 @@ from pathlib import Path
 from datetime import datetime
 
 # ================= CONFIG =================
+MIN_ROWS = 3
 MAX_ROWS = 8  # maximum rows for CSVs and README
 IOCS_CSV = Path("iocs/osint_iocs.csv")
 VULN_CSV = Path("vulnerabilities/vuln_scan_sample.csv")
@@ -12,11 +13,18 @@ CHART_FILE = Path("top_source_ips.png")
 README_FILE = Path("README.md")
 # ==========================================
 
-def read_and_trim_csv(csv_path, sort_col=None):
+def trim_and_save_csv(csv_path, sort_col=None):
+    """
+    Read a CSV, trim it to MAX_ROWS (but at least MIN_ROWS),
+    sort by sort_col if given, then overwrite CSV.
+    """
     df = pd.read_csv(csv_path)
     if sort_col:
         df = df.sort_values(by=sort_col, ascending=False)
-    df_trimmed = df.head(MAX_ROWS)
+    # Ensure at least MIN_ROWS if possible
+    n_rows = min(MAX_ROWS, max(MIN_ROWS, len(df)))
+    df_trimmed = df.head(n_rows)
+    df_trimmed.to_csv(csv_path, index=False)
     return df_trimmed
 
 def generate_chart(csv_path, chart_path):
@@ -37,10 +45,10 @@ def format_table(df):
     return df.to_markdown(index=False)
 
 def generate_readme():
-    # --- Trim CSVs ---
-    iocs_df = read_and_trim_csv(IOCS_CSV, sort_col="confidence")
-    vuln_df = read_and_trim_csv(VULN_CSV, sort_col="risk_score")
-    top_ips_df = read_and_trim_csv(TOP_IPS_CSV, sort_col="count")
+    # --- Trim CSVs and overwrite them ---
+    iocs_df = trim_and_save_csv(IOCS_CSV, sort_col="confidence")
+    vuln_df = trim_and_save_csv(VULN_CSV, sort_col="risk_score")
+    top_ips_df = trim_and_save_csv(TOP_IPS_CSV, sort_col="count")
 
     # --- Generate Chart ---
     generate_chart(TOP_IPS_CSV, CHART_FILE)
