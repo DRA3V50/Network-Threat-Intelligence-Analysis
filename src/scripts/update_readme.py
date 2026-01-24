@@ -1,130 +1,116 @@
-#!/usr/bin/env python3
 import pandas as pd
-from pathlib import Path
 import matplotlib.pyplot as plt
+from pathlib import Path
 from datetime import datetime
 
-# -----------------------------
-# Configuration
-# -----------------------------
-MAX_ROWS = 10  # max rows to display for both folder and README
+# ================= CONFIG =================
+MAX_ROWS = 8  # maximum rows for CSVs and README
 IOCS_CSV = Path("iocs/osint_iocs.csv")
 VULN_CSV = Path("vulnerabilities/vuln_scan_sample.csv")
 TOP_IPS_CSV = Path("top_source_ips.csv")
-CHART_FILE = Path("outputs/charts/top_source_ips.png")
+CHART_FILE = Path("top_source_ips.png")
 README_FILE = Path("README.md")
+# ==========================================
 
-# -----------------------------
-# Helper functions
-# -----------------------------
-def read_and_trim_csv(csv_path, sort_col=None, ascending=False):
-    """Read CSV and trim to top MAX_ROWS, optionally sorted by column."""
-    if not csv_path.exists():
-        print(f"Warning: CSV file {csv_path} not found. Skipping.")
-        return pd.DataFrame()
-    
+def read_and_trim_csv(csv_path, sort_col=None):
     df = pd.read_csv(csv_path)
-
-    # Sort by severity/risk/count if specified
-    if sort_col and sort_col in df.columns:
-        df = df.sort_values(by=sort_col, ascending=ascending)
-
-    # Trim rows to MAX_ROWS
-    df = df.head(MAX_ROWS)
-    return df
-
-def format_csv_to_md(df):
-    """Convert a DataFrame to markdown table format."""
-    if df.empty:
-        return "No data available."
-    return df.to_markdown(index=False)
+    if sort_col:
+        df = df.sort_values(by=sort_col, ascending=False)
+    df_trimmed = df.head(MAX_ROWS)
+    return df_trimmed
 
 def generate_chart(csv_path, chart_path):
-    """Generate a bar chart for top source IPs with intensity based on count."""
-    if not csv_path.exists():
-        print(f"Warning: CSV {csv_path} not found. Chart not generated.")
-        return
-
     df = pd.read_csv(csv_path)
-    if df.empty or "ip" not in df.columns or "count" not in df.columns:
-        print(f"Chart CSV missing required data. Skipping chart.")
-        return
-
-    counts = df["count"]
-    # Normalize counts for color intensity
-    norm = (counts - counts.min()) / (counts.max() - counts.min() + 1e-5)
-    colors = [(1, 0, 0, alpha) for alpha in norm]  # varying red intensity
+    df = df.sort_values(by="count", ascending=True).head(MAX_ROWS)
 
     plt.figure(figsize=(8, 5))
-    plt.bar(df["ip"], df["count"], color=colors, edgecolor="black")
-    plt.xticks(rotation=45, ha="right")
-    plt.ylabel("Connection Count")
-    plt.title("Top Source IPs by Activity")
+    colors = plt.cm.Reds(df["count"] / df["count"].max())
+    plt.barh(df["ip"], df["count"], color=colors)
+    plt.xlabel("Network Activity Count")
+    plt.ylabel("Source IP")
+    plt.title("📈 Top Source IPs by Network Activity")
     plt.tight_layout()
-    chart_path.parent.mkdir(parents=True, exist_ok=True)
     plt.savefig(chart_path)
     plt.close()
 
-# -----------------------------
-# Main README Generation
-# -----------------------------
-def generate_readme():
-    # Read CSVs and trim
-    iocs_df = read_and_trim_csv(IOCS_CSV, sort_col="confidence", ascending=False)
-    vuln_df = read_and_trim_csv(VULN_CSV, sort_col="risk_score", ascending=False)
-    top_ips_df = read_and_trim_csv(TOP_IPS_CSV, sort_col="count", ascending=False)
+def format_table(df):
+    return df.to_markdown(index=False)
 
-    # Generate chart
+def generate_readme():
+    # --- Trim CSVs ---
+    iocs_df = read_and_trim_csv(IOCS_CSV, sort_col="confidence")
+    vuln_df = read_and_trim_csv(VULN_CSV, sort_col="risk_score")
+    top_ips_df = read_and_trim_csv(TOP_IPS_CSV, sort_col="count")
+
+    # --- Generate Chart ---
     generate_chart(TOP_IPS_CSV, CHART_FILE)
 
+    # --- Current UTC timestamp ---
     timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
+    # --- Readme content ---
     readme_content = f"""
-# Network Threat Intelligence Analysis
+# Network-Threat-Intelligence-Analysis
 
 🛡️ Automated defensive network analysis with OSINT enrichment and threat correlation
 
 ---
 
-## Daily Automated Threat Intelligence Update
+## Overview
+This repository demonstrates a Blue Team–focused approach to analyzing network activity,  
+open-source threat intelligence, and vulnerability data in support of defensive cyber operations.
 
-**Timestamp (UTC):** {timestamp}
-"""
+---
 
-    if not iocs_df.empty:
-        readme_content += f"""
-### 🛡️ Top Threat Indicators (Open-Source Intel)
-This table summarizes the highest-confidence threat indicators (IPs, Domains, Hashes) collected from open-source intelligence sources.
+## Analytical Focus
+- Understanding network behavior and traffic patterns  
+- Applying threat intelligence to contextualize observed activity  
+- Correlating indicators of compromise with network-derived insights  
+- Prioritizing risk to support informed defensive actions
 
-{format_csv_to_md(iocs_df)}
-"""
+---
 
-    if not vuln_df.empty:
-        readme_content += f"""
-### 🔴 High-Risk Vulnerabilities
-This table lists the most critical vulnerabilities identified in the network, sorted by risk score.
+## Daily Analysis Snapshot
+> This section is dynamically updated by automated workflows.  
+> **Do not edit content between the markers below.**
 
-{format_csv_to_md(vuln_df)}
-"""
+<!-- AUTO-GENERATED-SECTION:START -->
 
-    if CHART_FILE.exists():
-        readme_content += f"""
-### 📊 Network Activity Chart
-Top Source IPs by connection count:
+### 🛡️ Threat Indicators (Indicators of Compromise)
+📊 Timestamp (UTC): {timestamp}
 
+{format_table(iocs_df)}
+
+### ⚠️ High-Risk Vulnerabilities
+{format_table(vuln_df)}
+
+### 📈 Top Source IPs by Network Activity
 ![Top Source IPs Chart]({CHART_FILE})
 
-*This chart visualizes the network activity, highlighting the most active source IPs.*
+*This summary is auto-generated.*
+
+<!-- AUTO-GENERATED-SECTION:END -->
+
+---
+
+## Generated Files
+- Reports:
+  - **[OSINT Threat Indicators]({IOCS_CSV})**
+  - **[Vulnerability Scan]({VULN_CSV})**
+- Charts:
+  - **[Top Source IPs Chart]({CHART_FILE})**
+
+---
+
+## Legal & Ethical Notice
+- No exploitation, intrusion, or active scanning  
+- Data is sanitized, simulated, or derived from public sources  
+- Usage is limited to education, research, and lawful defensive analysis
 """
 
-    # Save README
+    # --- Write README ---
     with open(README_FILE, "w") as f:
         f.write(readme_content)
 
-    print(f"README updated: {README_FILE}")
-
-# -----------------------------
-# Run
-# -----------------------------
 if __name__ == "__main__":
     generate_readme()
