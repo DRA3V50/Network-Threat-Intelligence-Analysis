@@ -2,6 +2,7 @@ import csv
 import random
 from pathlib import Path
 
+df = df.sort_values("confidence", ascending=False).head(7)
 
 def pull_osint_iocs(output_dir: Path, count: int = 50):
     """
