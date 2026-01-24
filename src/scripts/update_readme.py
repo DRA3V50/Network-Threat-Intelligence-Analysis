@@ -1,128 +1,111 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from datetime import datetime
 from pathlib import Path
+from datetime import datetime
 
-# Paths
-IOCS_CSV = Path("iocs/osint_iocs.csv")
-VULN_CSV = Path("vulnerabilities/vuln_scan_sample.csv")
-CHART_FILE = Path("charts/top_source_ips.png")
+# ----------------------
+# CONFIGURATION
+# ----------------------
+MAX_ROWS = 10  # Max number of rows to include from CSVs
+IOCS_CSV = Path("build/iocs/osint_iocs.csv")
+VULN_CSV = Path("build/vulnerabilities/vuln_scan_sample.csv")
+TOP_IPS_CSV = Path("build/top_source_ips.csv")
+CHART_FILE = Path("outputs/charts/top_source_ips.png")
 README_FILE = Path("README.md")
 
-# Settings
-MAX_ROWS = 10  # Max rows for tables
-SEVERITY_COLORS = {
-    "CRITICAL": "#B22222",  # FireBrick
-    "HIGH": "#FF4500",      # OrangeRed
-    "MEDIUM": "#FFA500",    # Orange
-    "LOW": "#FFD700"        # Gold
-}
+# Ensure outputs folder exists
+CHART_FILE.parent.mkdir(parents=True, exist_ok=True)
 
-def read_and_trim_csv(csv_path, max_rows=MAX_ROWS, severity_col="severity"):
+# ----------------------
+# HELPER FUNCTIONS
+# ----------------------
+def read_and_trim_csv(csv_path, sort_col=None, ascending=False):
+    """Read CSV and trim to top MAX_ROWS, optionally sorted by column."""
     df = pd.read_csv(csv_path)
-    if severity_col in df.columns:
-        # Sort by severity: CRITICAL > HIGH > MEDIUM > LOW
-        severity_order = {"CRITICAL": 4, "HIGH": 3, "MEDIUM": 2, "LOW": 1}
-        df["severity_rank"] = df[severity_col].map(severity_order).fillna(0)
-        df = df.sort_values("severity_rank", ascending=False)
-        df = df.head(max_rows)
-        df.drop(columns=["severity_rank"], inplace=True)
-    else:
-        df = df.head(max_rows)
-    return df
+    if sort_col and sort_col in df.columns:
+        df = df.sort_values(by=sort_col, ascending=ascending)
+    return df.head(MAX_ROWS)
 
-def generate_chart(csv_path, chart_file):
-    if not csv_path.exists():
-        print(f"CSV for chart not found: {csv_path}")
-        return
+def generate_chart(csv_path, chart_path):
+    """Generate bar chart for top IPs colored by severity/risk."""
     df = pd.read_csv(csv_path)
-    if "ip" not in df.columns or "count" not in df.columns:
-        print(f"CSV missing 'ip' or 'count' columns: {csv_path}")
+    if "count" not in df.columns or "ip" not in df.columns:
+        print(f"CSV {csv_path} missing required columns 'ip' and 'count'. Skipping chart.")
         return
 
-    # Map color by count for severity-style effect
-    df_sorted = df.sort_values("count", ascending=False)
-    colors = plt.cm.Reds(df_sorted["count"] / df_sorted["count"].max())
+    # Normalize counts for color intensity
+    counts = df["count"]
+    norm = (counts - counts.min()) / (counts.max() - counts.min() + 1e-5)
+    colors = [(1, 0, 0, alpha) for alpha in norm]  # red with alpha for severity
 
-    plt.figure(figsize=(8, 4))
-    plt.bar(df_sorted["ip"], df_sorted["count"], color=colors, edgecolor="black")
+    plt.figure(figsize=(8, 5))
+    plt.bar(df["ip"], df["count"], color=colors, edgecolor="black")
     plt.xticks(rotation=45, ha="right")
-    plt.ylabel("Count")
-    plt.title("Top Source IP Activity")
+    plt.ylabel("Connection Count")
+    plt.title("Top Source IPs by Activity")
     plt.tight_layout()
-    chart_file.parent.mkdir(exist_ok=True, parents=True)
-    plt.savefig(chart_file)
+    plt.savefig(chart_path)
     plt.close()
 
-def dataframe_to_markdown(df):
+def format_csv_to_md(df):
+    """Convert DataFrame to Markdown table."""
     return df.to_markdown(index=False)
 
+# ----------------------
+# MAIN README GENERATION
+# ----------------------
 def generate_readme():
-    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-
-    # Load data
-    iocs_df = read_and_trim_csv(IOCS_CSV)
-    vuln_df = read_and_trim_csv(VULN_CSV)
+    # Read and trim CSVs
+    iocs_df = read_and_trim_csv(IOCS_CSV, sort_col="confidence")
+    vuln_df = read_and_trim_csv(VULN_CSV, sort_col="risk_score")
+    top_ips_df = read_and_trim_csv(TOP_IPS_CSV, sort_col="count")
 
     # Generate chart
-    generate_chart(Path("iocs/top_source_ips.csv"), CHART_FILE)
+    generate_chart(TOP_IPS_CSV, CHART_FILE)
 
-    # Markdown sections
-    readme_md = f"""# Network Threat Intelligence Analysis
+    # Prepare README content
+    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+    readme_content = f"""
+# Network Threat Intelligence Analysis
 
-📊 **Automated Defensive Network Analysis with OSINT Enrichment and Threat Correlation**
-
----
-
-## 🗂 Overview
-This repository demonstrates a **Blue Team–focused** approach to analyzing network activity,  
-open-source threat intelligence, and vulnerability data in support of defensive operations.
+🛡️ Automated defensive network analysis with OSINT enrichment and threat correlation
 
 ---
 
-## 🔍 Analytical Focus
-- Understand network behavior and traffic patterns
-- Contextualize activity using OSINT
-- Correlate indicators with observed network insights
-- Prioritize risk for informed defensive actions
+## Overview
+This repository demonstrates a Blue Team–oriented approach to analyzing network traffic, open-source threat intelligence, and vulnerabilities. Outputs are **actionable intelligence artifacts**, including correlated indicators and network summaries.
 
 ---
 
-## 📈 Operational Outputs
-- Analyst-ready intelligence artifacts
-- Correlated threat indicators
-- Visual summaries of network activity
-- Written summaries for briefings
-
----
-
-## ⚙️ Automation & Design
-Automated workflows for consistency and repeatability, keeping final conclusions **analyst-driven**.
-
----
-
-## 🛡️ Daily Analysis Snapshot
-> This section is dynamically updated.  
+## Daily Automated Threat Intelligence Update
 
 **Timestamp (UTC):** {timestamp}
 
-### 🔎 Observed Threat Indicators (OSINT)
-These are external intelligence indicators collected from open sources relevant to network defense.
-{dataframe_to_markdown(iocs_df)}
+### 🛡️ Top Threat Indicators (OSINT)
+This table summarizes the highest-confidence indicators collected from OSINT feeds.
 
-### ⚠️ High-Risk Vulnerabilities
-These are vulnerabilities detected on monitored hosts, sorted from most critical to least.
-{dataframe_to_markdown(vuln_df)}
+{format_csv_to_md(iocs_df)}
 
-### 📊 Network Activity Chart
-![Top Source IPs Activity]({CHART_FILE})
+### 🔴 High-Risk Vulnerabilities
+This table lists the most critical vulnerabilities identified in the network, sorted by risk score.
 
-*Chart shows top source IPs by activity count.*
+{format_csv_to_md(vuln_df)}
+
+### 📈 Network Activity Chart
+Top Source IPs by Activity:
+
+![Top Source IPs Chart]({CHART_FILE})
+
+*This summary is auto-generated.*
 """
 
+    # Write README
     with open(README_FILE, "w") as f:
-        f.write(readme_md)
-    print(f"README updated: {README_FILE}")
+        f.write(readme_content)
+    print("README.md updated successfully!")
 
+# ----------------------
+# RUN
+# ----------------------
 if __name__ == "__main__":
     generate_readme()
