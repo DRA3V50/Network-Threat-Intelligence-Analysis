@@ -1,5 +1,11 @@
 ioc_type,ioc_value,confidence,source
-DOMAIN,malicious256.com,94,OSINT-SIM
-URL,http://bad930.example/path,94,OSINT-SIM
-DOMAIN,malicious148.com,93,OSINT-SIM
-HASH,ecf14c0137d2cbcc12579bc7cdaf7917,93,OSINT-SIM
+HASH,16079e8bfcba3b6e2d1d440d78524fd9,95,OSINT-SIM
+URL,http://bad787.example/path,95,OSINT-SIM
+URL,http://bad679.example/path,94,OSINT-SIM
+DOMAIN,malicious205.com,93,OSINT-SIM
+DOMAIN,malicious915.com,93,OSINT-SIM
+URL,http://bad894.example/path,93,OSINT-SIM
+IP,185.206.228.93,93,OSINT-SIM
+HASH,85d91182671023d6a96b4e717ea79ed4,91,OSINT-SIM
+IP,185.202.139.179,91,OSINT-SIM
+DOMAIN,malicious378.com,91,OSINT-SIM
