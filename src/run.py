@@ -9,7 +9,7 @@ from src.analysis.pcap_parser import parse_pcap
 from src.analysis.vuln_analysis import generate_vulnerabilities
 
 # ---------------- REPORTING ----------------
-from src.reporting.charting import generate_top_source_ips_chart
+from src.analysis.charting import generate_top_source_ips_chart
 
 # ---------------- FINALIZATION (CRITICAL) ----------------
 from src.scripts.finalize_outputs import finalize_outputs
