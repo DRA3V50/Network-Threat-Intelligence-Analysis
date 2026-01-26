@@ -6,7 +6,7 @@ README = Path("README.md")
 
 IOCS = Path("build/iocs/osint_iocs.csv")
 VULNS = Path("build/vulnerabilities/vuln_scan_sample.csv")
-CHART = "build/charts/top_source_ips.png"
+CHART = "build/charts/top_source_ips.csv"
 
 START = "<!-- AUTO-GENERATED-START -->"
 END = "<!-- AUTO-GENERATED-END -->"
