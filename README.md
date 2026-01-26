@@ -114,7 +114,7 @@ Prioritized based on exploitability and potential operational impact.
 | VULN-1038 | CVE-2024-7846 | HIGH       |          8.4 | 192.168.1.83    |
 
 ### 📊 Network Activity Overview
-![Top Source IPs](build/charts/top_source_ips.png)
+![Top Source IPs](build/pcaps/top_source_ips.csv)
 
 <!-- AUTO-GENERATED-END -->
 
