@@ -12,65 +12,54 @@ def generate_top_source_ips_chart(csv_path, output_path):
         return
 
     df = pd.read_csv(csv_path)
-    if df.empty:
-        print("[!] CSV empty, skipping chart")
+
+    if df.empty or "count" not in df.columns:
+        print("[!] Invalid or empty CSV, skipping chart")
         return
 
-    # ---- COLUMN SAFETY ----
-    # Supports either "source_ip" or "ip"
-    if "source_ip" in df.columns:
-        ip_col = "source_ip"
-    elif "ip" in df.columns:
-        ip_col = "ip"
-    else:
-        raise ValueError("CSV must contain 'source_ip' or 'ip' column")
-
-    if "count" not in df.columns:
-        raise ValueError("CSV must contain 'count' column")
-
-    # ---- SORT (MOST ACTIVE FIRST) ----
+    # Sort so bars are meaningful
     df = df.sort_values("count", ascending=False)
 
-    # ---- STYLE (Dark, serious, analyst-grade) ----
-    plt.style.use("dark_background")
-    plt.rcParams.update({
-        "figure.figsize": (7, 4),
-        "axes.facecolor": "#0b0b0b",
-        "figure.facecolor": "#0b0b0b",
-        "axes.edgecolor": "white",
-        "axes.labelcolor": "white",
-        "xtick.color": "white",
-        "ytick.color": "white",
-        "text.color": "white",
-    })
+    # Normalize counts for color intensity
+    max_count = df["count"].max()
+    colors = [
+        (0.7, 0.0, 0.0, min(1.0, 0.3 + (c / max_count)))
+        for c in df["count"]
+    ]
 
-    # ---- COLOR GRADIENT (INTENSITY-BASED RED) ----
-    norm = plt.Normalize(df["count"].min(), df["count"].max())
-    colors = plt.cm.Reds(norm(df["count"]))
+    # ---- HARD STYLE RESET (no matplotlib surprises) ----
+    plt.rcParams.update(plt.rcParamsDefault)
 
-    plt.bar(
-        df[ip_col],
+    fig, ax = plt.subplots(figsize=(8, 4))
+    fig.patch.set_facecolor("#0b0b0b")
+    ax.set_facecolor("#0b0b0b")
+
+    ax.bar(
+        df["source_ip"],
         df["count"],
         color=colors,
         edgecolor="white",
-        linewidth=0.6
+        linewidth=0.8
     )
 
-    # ---- LOG SCALE (CRITICAL FIX FOR FLAT BARS) ----
-    plt.yscale("log")
+    ax.set_title(
+        "Top Source IPs by Connection Volume",
+        color="white",
+        fontsize=11,
+        pad=10
+    )
+    ax.set_xlabel("Source IP", color="white", fontsize=9)
+    ax.set_ylabel("Connection Count", color="white", fontsize=9)
 
-    plt.title("Top Source IPs by Observed Network Activity", fontsize=11)
-    plt.xlabel("Source IP", fontsize=9)
-    plt.ylabel("Connection Count (log scale)", fontsize=9)
+    ax.tick_params(axis="x", colors="white", labelrotation=45, labelsize=8)
+    ax.tick_params(axis="y", colors="white", labelsize=8)
 
-    plt.xticks(rotation=45, ha="right", fontsize=8)
-    plt.yticks(fontsize=8)
+    for spine in ax.spines.values():
+        spine.set_color("white")
 
     plt.tight_layout()
-
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(output_path, dpi=130)
+    plt.savefig(output_path, dpi=140, facecolor=fig.get_facecolor())
     plt.close()
 
     print(f"[+] Chart written to {output_path}")
-
