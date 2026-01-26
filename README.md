@@ -76,47 +76,49 @@ Elevated activity may indicate:
 
 
 
+
 <!-- AUTO-GENERATED-START -->
 
 ## 📌 Daily Threat Intelligence Snapshot
-**Generated (UTC):** 2026-01-26 03:21
+**Generated (UTC):** 2026-01-26 03:33
 
 ### 🛰️ High-Confidence Threat Indicators
 Indicators correlated from curated open-source intelligence feeds.
 
 | ioc_type   | ioc_value                        |   confidence | source                   |
 |:-----------|:---------------------------------|-------------:|:-------------------------|
-| DOMAIN     | malicious394.com                 |           95 | Open-Source Intelligence |
-| HASH       | d6bc3362199868a578276477d9977bb0 |           93 | Open-Source Intelligence |
-| DOMAIN     | malicious928.com                 |           93 | Open-Source Intelligence |
-| HASH       | 7730ff8499fb6f9801ebf87dbf0c40c9 |           92 | Open-Source Intelligence |
-| HASH       | 6564e3a908280a359cac5b454d110576 |           90 | Open-Source Intelligence |
-| IP         | 185.195.42.28                    |           90 | Open-Source Intelligence |
-| HASH       | 1ccd2cd47ae8bfedbd66eaa6278b9b42 |           90 | Open-Source Intelligence |
-| IP         | 185.224.140.229                  |           85 | Open-Source Intelligence |
-| HASH       | d6e16d4666429a54216b3f1057b706a0 |           84 | Open-Source Intelligence |
-| URL        | http://bad888.example/path       |           84 | Open-Source Intelligence |
+| IP         | 185.88.38.119                    |           95 | Open-Source Intelligence |
+| IP         | 185.230.226.156                  |           95 | Open-Source Intelligence |
+| URL        | http://bad277.example/path       |           94 | Open-Source Intelligence |
+| IP         | 185.231.24.55                    |           94 | Open-Source Intelligence |
+| IP         | 185.225.231.160                  |           92 | Open-Source Intelligence |
+| IP         | 185.142.123.143                  |           91 | Open-Source Intelligence |
+| IP         | 185.95.35.234                    |           90 | Open-Source Intelligence |
+| HASH       | de165d8001be50f27053c53f487d2cd8 |           88 | Open-Source Intelligence |
+| DOMAIN     | malicious193.com                 |           85 | Open-Source Intelligence |
+| IP         | 185.61.1.74                      |           85 | Open-Source Intelligence |
 
 ### 🔥 Highest-Risk Vulnerabilities
 Prioritized based on exploitability and potential operational impact.
 
 | vuln_id   | cve           | severity   |   risk_score | affected_host   |
 |:----------|:--------------|:-----------|-------------:|:----------------|
-| VULN-1008 | CVE-2024-5576 | MEDIUM     |          9.9 | 192.168.1.147   |
-| VULN-1016 | CVE-2024-1403 | LOW        |          9.4 | 192.168.1.55    |
-| VULN-1013 | CVE-2024-8337 | HIGH       |          9.3 | 192.168.1.225   |
-| VULN-1044 | CVE-2024-3327 | MEDIUM     |          9.2 | 192.168.1.146   |
-| VULN-1046 | CVE-2024-4340 | CRITICAL   |          9.2 | 192.168.1.21    |
-| VULN-1002 | CVE-2024-8942 | HIGH       |          8.9 | 192.168.1.91    |
-| VULN-1014 | CVE-2024-4962 | HIGH       |          8.7 | 192.168.1.242   |
-| VULN-1041 | CVE-2024-9863 | MEDIUM     |          8.7 | 192.168.1.230   |
-| VULN-1000 | CVE-2024-3910 | CRITICAL   |          8.5 | 192.168.1.187   |
-| VULN-1038 | CVE-2024-7846 | HIGH       |          8.4 | 192.168.1.83    |
+| VULN-1030 | CVE-2024-6197 | MEDIUM     |          9.7 | 192.168.1.198   |
+| VULN-1039 | CVE-2024-1511 | CRITICAL   |          9.3 | 192.168.1.100   |
+| VULN-1015 | CVE-2024-1468 | HIGH       |          9   | 192.168.1.117   |
+| VULN-1040 | CVE-2024-7283 | CRITICAL   |          8.8 | 192.168.1.159   |
+| VULN-1007 | CVE-2024-3255 | MEDIUM     |          8.8 | 192.168.1.226   |
+| VULN-1004 | CVE-2024-9671 | MEDIUM     |          8.8 | 192.168.1.168   |
+| VULN-1009 | CVE-2024-9708 | MEDIUM     |          8.6 | 192.168.1.167   |
+| VULN-1027 | CVE-2024-2523 | HIGH       |          8.1 | 192.168.1.138   |
+| VULN-1005 | CVE-2024-7787 | HIGH       |          8.1 | 192.168.1.91    |
+| VULN-1033 | CVE-2024-4307 | LOW        |          8   | 192.168.1.169   |
 
 ### 📊 Network Activity Overview
-![Top Source IPs](build/pcaps/top_source_ips.csv)
+![Top Source IPs](build/charts/top_source_ips.png)
 
 <!-- AUTO-GENERATED-END -->
+
 
 
 
