@@ -1,11 +1,11 @@
 ioc_type,ioc_value,confidence,source
-URL,http://bad667.example/path,92,Open-Source Intelligence
-URL,http://bad957.example/path,92,Open-Source Intelligence
-DOMAIN,malicious221.com,90,Open-Source Intelligence
-HASH,45cb3ff98299acaeaa131a59e012c310,90,Open-Source Intelligence
-URL,http://bad404.example/path,90,Open-Source Intelligence
-IP,185.66.59.203,90,Open-Source Intelligence
-URL,http://bad125.example/path,88,Open-Source Intelligence
-IP,185.69.180.57,88,Open-Source Intelligence
-IP,185.142.173.238,88,Open-Source Intelligence
-HASH,66f4393ab218a5c73e55cfcadd2723d4,86,Open-Source Intelligence
+HASH,9abf01e8c0e5b7a20ee3d415c6ea61bb,95,Open-Source Intelligence
+HASH,fbf73eb275fcdf843422530aa31d3b47,94,Open-Source Intelligence
+IP,185.105.208.104,92,Open-Source Intelligence
+URL,http://bad592.example/path,91,Open-Source Intelligence
+DOMAIN,malicious278.com,89,Open-Source Intelligence
+HASH,5abfb7d92a1b4045035c57d26ade0374,86,Open-Source Intelligence
+HASH,b87e6e0e133ad90b87f43c75c9037cb4,85,Open-Source Intelligence
+URL,http://bad848.example/path,84,Open-Source Intelligence
+HASH,96cca75dd1e9bd93577eb17db5347847,84,Open-Source Intelligence
+URL,http://bad727.example/path,83,Open-Source Intelligence
