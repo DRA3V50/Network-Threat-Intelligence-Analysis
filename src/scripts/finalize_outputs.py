@@ -1,32 +1,28 @@
-import pandas as pd
 from pathlib import Path
-from src.analysis.charting import generate_top_source_ips_chart
+from src.analysis.charting import generate_unified_network_chart
+from src.scripts.update_readme import generate_readme
 
 BUILD_DIR = Path("build")
-CHARTS_DIR = Path("outputs/charts")
-
-CHARTS_DIR.mkdir(parents=True, exist_ok=True)
-
-
-def trim_csv(csv_path: Path, sort_col: str, limit: int = 7):
-    if not csv_path.exists():
-        print(f"[!] Missing file: {csv_path}")
-        return
-
-    df = pd.read_csv(csv_path)
-
-    if sort_col in df.columns:
-        df = df.sort_values(sort_col, ascending=False)
-
-    df.head(limit).to_csv(csv_path, index=False)
-
+OUTPUT_CHART = BUILD_DIR / "charts" / "network_activity.png"
 
 def finalize_outputs():
-    # Trim OSINT
-    trim_csv(
-        BUILD_DIR / "iocs/osint_iocs.csv",
-        sort_col="confidence"
+    print("[*] Finalizing outputs (charts + README)")
+
+    iocs_csv = BUILD_DIR / "iocs" / "osint_iocs.csv"
+    vulns_csv = BUILD_DIR / "vulnerabilities" / "vuln_scan_sample.csv"
+    pcaps_csv = BUILD_DIR / "pcaps" / "top_source_ips.csv"
+
+    generate_unified_network_chart(
+        iocs_csv=iocs_csv,
+        vulns_csv=vulns_csv,
+        pcaps_csv=pcaps_csv,
+        output_path=OUTPUT_CHART,
+        max_rows=15
     )
+
+    generate_readme()
+    print("[+] Outputs finalized")
+
 
     # Trim Vulnerabilities
     trim_csv(
