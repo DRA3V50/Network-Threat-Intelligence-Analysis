@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 
-def generate_top_source_ips_chart(csv_path, output_path):
+def generate_top_source_ips_chart(csv_path, output_path, max_rows=7):
     csv_path = Path(csv_path)
     output_path = Path(output_path)
 
@@ -13,32 +13,72 @@ def generate_top_source_ips_chart(csv_path, output_path):
 
     df = pd.read_csv(csv_path)
 
-    if df.empty or "count" not in df.columns:
-        print("[!] Invalid or empty CSV")
+    if df.empty:
+        print("[!] CSV empty, skipping chart")
         return
 
-    # 🔽 CRITICAL FIX: sort so heights differ visibly
-    df = df.sort_values("count", ascending=False).head(7)
+    # -----------------------------
+    # 🔒 DATA SANITY (CRITICAL FIX)
+    # -----------------------------
+    if "source_ip" not in df.columns:
+        print("[!] Missing source_ip column")
+        return
 
-    # Dynamic color intensity (higher = darker red)
-    max_count = df["count"].max()
-    colors = [
-        (0.6 + (c / max_count) * 0.4, 0, 0) for c in df["count"]
-    ]
+    # If count exists → force numeric
+    if "count" in df.columns:
+        df["count"] = pd.to_numeric(df["count"], errors="coerce").fillna(0)
+        grouped = df.groupby("source_ip", as_index=False)["count"].sum()
+    else:
+        # Fallback: count occurrences
+        grouped = df.groupby("source_ip").size().reset_index(name="count")
 
+    grouped = (
+        grouped
+        .sort_values("count", ascending=False)
+        .head(max_rows)
+    )
+
+    if grouped.empty:
+        print("[!] No data after aggregation")
+        return
+
+    # -----------------------------
+    # 🎨 VISUAL STYLE (Resident Evil)
+    # -----------------------------
     plt.style.use("dark_background")
-    plt.figure(figsize=(8, 4))
-    plt.bar(df["source_ip"], df["count"], color=colors, edgecolor="white")
+    plt.rcParams.update({
+        "figure.figsize": (8, 4),
+        "axes.facecolor": "#0b0b0b",
+        "figure.facecolor": "#0b0b0b",
+        "axes.edgecolor": "white",
+        "axes.labelcolor": "white",
+        "xtick.color": "white",
+        "ytick.color": "white",
+        "text.color": "white",
+    })
 
-    plt.title("Top Source IPs by Connection Volume")
-    plt.xlabel("Source IP")
-    plt.ylabel("Connection Count")
+    bars = plt.bar(
+        grouped["source_ip"],
+        grouped["count"],
+        edgecolor="white"
+    )
 
-    plt.xticks(rotation=45, ha="right")
+    # 🔴 Severity gradient (light → dark red)
+    max_count = grouped["count"].max()
+    for bar, value in zip(bars, grouped["count"]):
+        intensity = value / max_count
+        bar.set_color((0.7 + 0.3 * intensity, 0, 0))
+
+    plt.title("Top Source IPs by Observed Network Activity", fontsize=11)
+    plt.xlabel("Source IP", fontsize=9)
+    plt.ylabel("Connection Count", fontsize=9)
+
+    plt.xticks(rotation=45, ha="right", fontsize=8)
+    plt.yticks(fontsize=8)
+
     plt.tight_layout()
-
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(output_path, dpi=140)
+    plt.savefig(output_path, dpi=130)
     plt.close()
 
-    print(f"[+] Chart generated: {output_path}")
+    print(f"[+] Chart written to {output_path}")
