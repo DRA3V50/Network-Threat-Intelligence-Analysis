@@ -2,52 +2,27 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-
-def generate_top_source_ips_chart(csv_path, output_path, max_rows=7):
-    csv_path = Path(csv_path)
+def generate_unified_network_chart(
+    iocs_csv: str,
+    vulns_csv: str,
+    pcaps_csv: str,
+    output_path: str,
+    max_rows: int = 15
+):
+    """
+    Generates a comprehensive network activity chart combining:
+    - Top IOCs (high confidence)
+    - Vulnerabilities (highest risk)
+    - Top source IPs
+    """
+    iocs_csv = Path(iocs_csv)
+    vulns_csv = Path(vulns_csv)
+    pcaps_csv = Path(pcaps_csv)
     output_path = Path(output_path)
 
-    if not csv_path.exists():
-        print(f"[!] CSV not found: {csv_path}")
-        return
-
-    df = pd.read_csv(csv_path)
-
-    if df.empty:
-        print("[!] CSV empty, skipping chart")
-        return
-
-    # -----------------------------
-    # 🔒 DATA SANITY (CRITICAL FIX)
-    # -----------------------------
-    if "source_ip" not in df.columns:
-        print("[!] Missing source_ip column")
-        return
-
-    # If count exists → force numeric
-    if "count" in df.columns:
-        df["count"] = pd.to_numeric(df["count"], errors="coerce").fillna(0)
-        grouped = df.groupby("source_ip", as_index=False)["count"].sum()
-    else:
-        # Fallback: count occurrences
-        grouped = df.groupby("source_ip").size().reset_index(name="count")
-
-    grouped = (
-        grouped
-        .sort_values("count", ascending=False)
-        .head(max_rows)
-    )
-
-    if grouped.empty:
-        print("[!] No data after aggregation")
-        return
-
-    # -----------------------------
-    # 🎨 VISUAL STYLE (Resident Evil)
-    # -----------------------------
     plt.style.use("dark_background")
     plt.rcParams.update({
-        "figure.figsize": (8, 4),
+        "figure.figsize": (12, 6),
         "axes.facecolor": "#0b0b0b",
         "figure.facecolor": "#0b0b0b",
         "axes.edgecolor": "white",
@@ -57,28 +32,68 @@ def generate_top_source_ips_chart(csv_path, output_path, max_rows=7):
         "text.color": "white",
     })
 
-    bars = plt.bar(
-        grouped["source_ip"],
-        grouped["count"],
-        edgecolor="white"
-    )
+    fig, ax = plt.subplots()
 
-    # 🔴 Severity gradient (light → dark red)
-    max_count = grouped["count"].max()
-    for bar, value in zip(bars, grouped["count"]):
-        intensity = value / max_count
-        bar.set_color((0.7 + 0.3 * intensity, 0, 0))
+    # ----------------------------
+    # Load and prepare PCAP top IPs
+    # ----------------------------
+    if pcaps_csv.exists():
+        df_pcaps = pd.read_csv(pcaps_csv)
+        df_pcaps["count"] = pd.to_numeric(df_pcaps.get("count", 1), errors="coerce").fillna(1)
+        df_pcaps = df_pcaps.groupby("source_ip", as_index=False)["count"].sum()
+        df_pcaps = df_pcaps.sort_values("count", ascending=False).head(max_rows)
+        ax.bar(
+            df_pcaps["source_ip"],
+            df_pcaps["count"],
+            color="#b30000",  # deep red
+            edgecolor="white",
+            label="Top Source IPs"
+        )
 
-    plt.title("Top Source IPs by Observed Network Activity", fontsize=11)
-    plt.xlabel("Source IP", fontsize=9)
-    plt.ylabel("Connection Count", fontsize=9)
+    # ----------------------------
+    # Load and prepare Vulnerabilities
+    # ----------------------------
+    if vulns_csv.exists():
+        df_vulns = pd.read_csv(vulns_csv)
+        if "risk_score" in df_vulns.columns:
+            df_vulns["risk_score"] = pd.to_numeric(df_vulns["risk_score"], errors="coerce").fillna(0)
+            df_vulns = df_vulns.sort_values("risk_score", ascending=False).head(max_rows)
+            ax.bar(
+                df_vulns["vuln_id"],
+                df_vulns["risk_score"],
+                color="#ff4500",  # orange-red
+                edgecolor="white",
+                alpha=0.7,
+                label="Top Vulnerabilities"
+            )
 
-    plt.xticks(rotation=45, ha="right", fontsize=8)
-    plt.yticks(fontsize=8)
+    # ----------------------------
+    # Load and prepare IOCs
+    # ----------------------------
+    if iocs_csv.exists():
+        df_iocs = pd.read_csv(iocs_csv)
+        if "confidence" in df_iocs.columns:
+            df_iocs["confidence"] = pd.to_numeric(df_iocs["confidence"], errors="coerce").fillna(0)
+            df_iocs = df_iocs.sort_values("confidence", ascending=False).head(max_rows)
+            ax.bar(
+                df_iocs["ioc_value"],
+                df_iocs["confidence"],
+                color="#ff6666",  # light red/pink
+                edgecolor="white",
+                alpha=0.6,
+                label="High-Confidence IOCs"
+            )
 
+    # ----------------------------
+    # Finalize chart
+    # ----------------------------
+    ax.set_title("Comprehensive Network Threat Activity Overview", fontsize=14)
+    ax.set_ylabel("Event Count / Severity / Confidence")
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right", fontsize=8)
+    ax.legend()
     plt.tight_layout()
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(output_path, dpi=130)
+    plt.savefig(output_path, dpi=140)
     plt.close()
 
-    print(f"[+] Chart written to {output_path}")
+    print(f"[+] Unified network chart written to {output_path}")
