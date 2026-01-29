@@ -8,7 +8,7 @@ from src.ingestion.threat_feed_pull import pull_osint_iocs
 from src.analysis.pcap_parser import parse_pcap
 from src.analysis.vuln_analysis import generate_vulnerabilities
 
-# FINALIZATION (charts + README)
+# FINALIZATION
 from src.scripts.finalize_outputs import finalize_outputs
 
 
@@ -24,7 +24,7 @@ PCAP_DIR = BUILD_DIR / "pcaps"
 def main():
     print("[*] Starting Network Threat Intelligence Pipeline")
 
-    # Ensure base directories exist
+    # Ensure directories exist
     BUILD_DIR.mkdir(exist_ok=True)
     IOC_DIR.mkdir(exist_ok=True)
     VULN_DIR.mkdir(exist_ok=True)
@@ -42,9 +42,9 @@ def main():
     print("[*] Parsing PCAP and extracting network signals")
     parse_pcap(output_dir=PCAP_DIR)
 
-    # 4️⃣ Finalization (charts + README update)
+    # 4️⃣ Finalization (charts + README)
     print("[*] Finalizing outputs (charts + README)")
-    finalize_outputs(build_dir=BUILD_DIR)
+    finalize_outputs()   # ✅ FIXED — no arguments
 
     print(f"[+] Pipeline completed successfully @ {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}")
 
