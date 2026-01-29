@@ -1,8 +1,8 @@
 ioc_type,ioc_value,confidence,source
-HASH,c4a1e4f94080b518f5b76f8486cf37eb,94,Open-Source Intelligence
-HASH,3293286a844c253245ac5f8263915174,94,Open-Source Intelligence
-DOMAIN,malicious444.com,93,Open-Source Intelligence
-URL,http://bad196.example/path,92,Open-Source Intelligence
-IP,185.250.223.139,92,Open-Source Intelligence
-HASH,aa56ce228b820eda38c637325224d73d,91,Open-Source Intelligence
-URL,http://bad146.example/path,91,Open-Source Intelligence
+URL,http://bad753.example/path,93,Open-Source Intelligence
+HASH,252a2444e235d73da997e744df5f060f,93,Open-Source Intelligence
+DOMAIN,malicious903.com,91,Open-Source Intelligence
+IP,185.202.139.20,90,Open-Source Intelligence
+IP,185.152.19.27,90,Open-Source Intelligence
+HASH,e471ea83a9fc532c4f14a07addd1d5c4,89,Open-Source Intelligence
+IP,185.207.245.50,89,Open-Source Intelligence
