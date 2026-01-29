@@ -1,76 +1,49 @@
 import pandas as pd
 from pathlib import Path
-
-# ---------------- CONFIG ---------------- #
+from src.analysis.charting import generate_top_source_ips_chart
 
 BUILD_DIR = Path("build")
+CHARTS_DIR = Path("outputs/charts")
 
-IOCS_CSV = BUILD_DIR / "iocs" / "osint_iocs.csv"
-VULNS_CSV = BUILD_DIR / "vulnerabilities" / "vuln_scan_sample.csv"
-TOP_IPS_CSV = BUILD_DIR / "top_source_ips.csv"
-
-MIN_ROWS = 3
-MAX_ROWS = 10
-
-# ---------------------------------------- #
+CHARTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def trim_csv(
-    csv_path: Path,
-    sort_col: str,
-    ascending: bool = False,
-):
-    """
-    Sort + trim CSV IN PLACE so all downstream consumers match exactly.
-    """
+def trim_csv(csv_path: Path, sort_col: str, limit: int = 7):
     if not csv_path.exists():
         print(f"[!] Missing file: {csv_path}")
         return
 
     df = pd.read_csv(csv_path)
 
-    if df.empty:
-        print(f"[!] Empty file: {csv_path}")
-        return
+    if sort_col in df.columns:
+        df = df.sort_values(sort_col, ascending=False)
 
-    # Clamp row count
-    target_rows = min(MAX_ROWS, max(MIN_ROWS, len(df)))
-
-    # Sort by severity / confidence / count
-    df = df.sort_values(sort_col, ascending=ascending).head(target_rows)
-
-    # Overwrite same file (authoritative)
-    csv_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(csv_path, index=False)
-
-    print(f"[✓] Finalized {csv_path} → {len(df)} rows")
+    df.head(limit).to_csv(csv_path, index=False)
 
 
 def finalize_outputs():
-    print("\n[+] Finalizing pipeline outputs...\n")
-
-    # OSINT Indicators → highest confidence first
+    # Trim OSINT
     trim_csv(
-        csv_path=IOCS_CSV,
-        sort_col="confidence",
-        ascending=False
+        BUILD_DIR / "iocs/osint_iocs.csv",
+        sort_col="confidence"
     )
 
-    # Vulnerabilities → highest risk first
+    # Trim Vulnerabilities
     trim_csv(
-        csv_path=VULNS_CSV,
-        sort_col="risk_score",
-        ascending=False
+        BUILD_DIR / "vulnerabilities/vuln_scan_sample.csv",
+        sort_col="risk_score"
     )
 
-    # Network activity → highest traffic first
-    trim_csv(
-        csv_path=TOP_IPS_CSV,
-        sort_col="count",
-        ascending=False
+    # Trim PCAP + generate chart
+    pcap_csv = BUILD_DIR / "pcaps/top_source_ips.csv"
+    trim_csv(pcap_csv, sort_col="count")
+
+    generate_top_source_ips_chart(
+        csv_path=pcap_csv,
+        output_path=CHARTS_DIR / "top_source_ips.png"
     )
 
-    print("\n[✓] All outputs finalized and aligned\n")
+    print("[+] Final outputs trimmed and chart generated")
 
 
 if __name__ == "__main__":
