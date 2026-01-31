@@ -1,37 +1,42 @@
-import pandas as pd
+import csv
 from pathlib import Path
 import random
 
+IOC_TYPES = ["ip", "domain", "hash"]
 
-def pull_osint_iocs(output_dir: Path, max_rows: int = 15):
-    """
-    Pulls OSINT threat indicators and writes a capped CSV.
-    """
+SAMPLE_IOCS = [
+    "185.81.68.90",
+    "185.82.113.99",
+    "malicious.com",
+    "badactor.net",
+    "2ddbdd712c056f34bd0aa2cc",
+    "193.42.157.198",
+    "malwaredrop.org",
+    "185.83.60.186",
+]
 
+
+def pull_osint_iocs(output_dir: Path, limit: int = 12):
     print("[*] Pulling OSINT threat indicators")
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / "osint_iocs.csv"
+    output_file = output_dir / "osint_iocs.csv"
 
-    # ---- SAMPLE OSINT DATA (replace with real feeds later) ----
-    iocs = []
-    for i in range(1, 51):
-        iocs.append({
-            "ioc": f"malicious{i}.com",
-            "type": "domain",
-            "confidence": random.randint(60, 95),
-            "source": "OSINT-Feed"
-        })
+    rows = []
+    for value in SAMPLE_IOCS[:limit]:
+        rows.append(
+            {
+                "ioc_value": value,
+                "ioc_type": random.choice(IOC_TYPES),
+                "confidence": random.randint(70, 95),
+            }
+        )
 
-    df = pd.DataFrame(iocs)
+    with open(output_file, "w", newline="") as f:
+        writer = csv.DictWriter(
+            f, fieldnames=["ioc_value", "ioc_type", "confidence"]
+        )
+        writer.writeheader()
+        writer.writerows(rows)
 
-    # ---- FIX: CAP ROWS FOR PRESENTATION ----
-    df = (
-        df.sort_values("confidence", ascending=False)
-          .head(max_rows)
-          .reset_index(drop=True)
-    )
-
-    df.to_csv(output_path, index=False)
-
-    print(f"[+] OSINT IOCs written to {output_path}")
+    print(f"[+] OSINT IOCs written to {output_file}")
