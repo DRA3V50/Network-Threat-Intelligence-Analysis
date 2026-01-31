@@ -208,7 +208,7 @@ Prioritized based on exploitability and potential operational impact.
 | VULN-1049 | CVE-2024-5617 | CRITICAL   |          2.3 | 192.168.1.79    |
 
 ### 📊 Network Activity Overview
-![Top Source IPs](build/charts/top_source_ips.csv)
+![Network Activity](build/charts/network_activity.png)
 
 <!-- AUTO-GENERATED-END -->
 
