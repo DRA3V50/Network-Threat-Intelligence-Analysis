@@ -64,7 +64,7 @@ All timestamps are recorded in **UTC**.
 
 🚨 **Top Source IPs by Connection Volume**
 
-![Top Source IPs](outputs/charts/top_source_ips.png)
+![Network Threat Activity](build/charts/network_activity.png)
 
 This chart highlights the most active source IPs observed in the analyzed traffic.  
 Elevated activity may indicate:
