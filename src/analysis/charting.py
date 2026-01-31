@@ -63,7 +63,7 @@ def generate_unified_network_chart(
 
     ax.set_title("Comprehensive Network Threat Activity Overview", fontsize=14)
     ax.set_ylabel("Event Count / Severity / Confidence")
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right", fontsize=8)
+    plt.xticks(rotation=45, ha="right", fontsize=8)
     ax.legend()
     plt.tight_layout()
     output_path.parent.mkdir(parents=True, exist_ok=True)
