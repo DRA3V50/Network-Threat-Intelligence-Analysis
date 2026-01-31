@@ -207,28 +207,6 @@ Prioritized based on exploitability and potential operational impact.
 | VULN-1048 | CVE-2024-5851 | MEDIUM     |          3.5 | 192.168.1.47    |
 | VULN-1049 | CVE-2024-5617 | CRITICAL   |          2.3 | 192.168.1.79    |
 
-### 📊 Network Activity Overview
-![Network Activity](build/charts/network_activity.png)
-
-<!-- AUTO-GENERATED-END -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
----
 
 ## ⚠️ Important Notes
 
