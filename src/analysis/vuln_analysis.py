@@ -1,37 +1,45 @@
-import pandas as pd
+import csv
 from pathlib import Path
 import random
 
+VULNS = [
+    ("CVE-2024-3011", "Critical"),
+    ("CVE-2023-2198", "High"),
+    ("CVE-2022-4421", "Medium"),
+    ("CVE-2021-3375", "Low"),
+    ("CVE-2020-1195", "Medium"),
+]
 
-def generate_vulnerabilities(output_dir: Path, max_rows: int = 15):
-    """
-    Generates vulnerability findings and writes a capped CSV.
-    """
+SEVERITY_SCORE = {
+    "Critical": 9,
+    "High": 7,
+    "Medium": 5,
+    "Low": 3,
+}
 
+
+def generate_vulnerabilities(output_dir: Path, limit: int = 10):
     print("[*] Generating vulnerability findings")
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / "vuln_scan_sample.csv"
+    output_file = output_dir / "vuln_scan_sample.csv"
 
-    # ---- SAMPLE VULNERABILITY DATA ----
-    vulns = []
-    for i in range(1, 51):
-        vulns.append({
-            "vuln_id": f"VULN-{1000 + i}",
-            "service": random.choice(["SSH", "HTTP", "HTTPS", "FTP"]),
-            "severity": random.randint(1, 10),
-            "description": "Sample vulnerability finding"
-        })
+    rows = []
+    for cve, severity in VULNS[:limit]:
+        rows.append(
+            {
+                "vulnerability": cve,
+                "severity": severity,
+                "severity_score": SEVERITY_SCORE[severity],
+            }
+        )
 
-    df = pd.DataFrame(vulns)
+    with open(output_file, "w", newline="") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=["vulnerability", "severity", "severity_score"],
+        )
+        writer.writeheader()
+        writer.writerows(rows)
 
-    # ---- FIX: SORT BY SEVERITY + CAP ROWS ----
-    df = (
-        df.sort_values("severity", ascending=False)
-          .head(max_rows)
-          .reset_index(drop=True)
-    )
-
-    df.to_csv(output_path, index=False)
-
-    print(f"[+] Vulnerability report written to {output_path}")
+    print(f"[+] Vulnerability report written to {output_file}")
