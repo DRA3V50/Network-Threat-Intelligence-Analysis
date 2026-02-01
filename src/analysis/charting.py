@@ -1,62 +1,97 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 
 def generate_unified_network_chart(
-    iocs_csv,
-    vulns_csv,
-    pcaps_csv,
-    output_path,
+    iocs_csv: Path,
+    pcaps_csv: Path,
+    vulns_csv: Path,
+    output_path: Path,
 ):
-    df_iocs = pd.read_csv(iocs_csv).head(10)
-    df_vulns = pd.read_csv(vulns_csv).head(10)
-    df_pcaps = pd.read_csv(pcaps_csv).head(10)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    fig, ax = plt.subplots(figsize=(14, 6))
-    fig.patch.set_facecolor("black")
-    ax.set_facecolor("black")
+    # =========================
+    # LOAD DATA SAFELY
+    # =========================
+    df_iocs = pd.read_csv(iocs_csv)
+    df_pcaps = pd.read_csv(pcaps_csv)
+    df_vulns = pd.read_csv(vulns_csv)
 
-    # --- IOC CONFIDENCE ---
-    ax.bar(
-        df_iocs["type"] + ":" + df_iocs["value"],
-        df_iocs["confidence"],
-        color="darkred",
-        label="IOC Confidence",
+    # =========================
+    # NORMALIZE IOC DATA
+    # =========================
+    # Detect usable columns automatically
+    ioc_value_col = next(
+        (c for c in df_iocs.columns if "ioc" in c.lower() or "indicator" in c.lower()),
+        df_iocs.columns[0],
     )
 
-    # --- VULNERABILITY SEVERITY ---
-    ax.bar(
-        df_vulns["vulnerability"],
-        df_vulns["severity_score"],
-        color="crimson",
-        alpha=0.8,
-        label="Vulnerability Severity",
+    df_iocs_agg = (
+        df_iocs[ioc_value_col]
+        .value_counts()
+        .head(10)
+        .reset_index()
+        .rename(columns={"index": "label", ioc_value_col: "count"})
     )
 
-    # --- PCAP SOURCE IP COUNTS ---
-    ax.bar(
-        df_pcaps["src_ip"],
-        df_pcaps["count"],
-        color="red",
-        alpha=0.7,
-        label="Source IP Frequency",
+    # =========================
+    # NORMALIZE PCAP DATA
+    # =========================
+    src_col = next(
+        (c for c in df_pcaps.columns if "source" in c.lower()),
+        df_pcaps.columns[0],
     )
 
-    ax.set_title(
-        "Unified Network Threat Activity",
-        color="red",
-        fontsize=14,
+    df_pcaps_agg = (
+        df_pcaps[src_col]
+        .value_counts()
+        .head(10)
+        .reset_index()
+        .rename(columns={"index": "label", src_col: "count"})
     )
 
-    ax.tick_params(axis="x", rotation=45, labelsize=8, colors="white")
-    ax.tick_params(axis="y", colors="white")
+    # =========================
+    # NORMALIZE VULN DATA
+    # =========================
+    sev_col = next(
+        (c for c in df_vulns.columns if "severity" in c.lower()),
+        df_vulns.columns[0],
+    )
 
-    for spine in ax.spines.values():
-        spine.set_color("red")
+    df_vulns_agg = (
+        df_vulns[sev_col]
+        .value_counts()
+        .reset_index()
+        .rename(columns={"index": "label", sev_col: "count"})
+    )
 
-    ax.legend(facecolor="black", edgecolor="red", labelcolor="white")
+    # =========================
+    # PLOT (RESIDENT EVIL STYLE)
+    # =========================
+    plt.figure(figsize=(14, 8))
+    plt.style.use("dark_background")
 
+    x_offset = 0
+
+    def plot_block(df, color, title):
+        nonlocal x_offset
+        xs = range(x_offset, x_offset + len(df))
+        plt.bar(xs, df["count"], color=color, label=title)
+        plt.xticks(xs, df["label"], rotation=45, ha="right", fontsize=8)
+        x_offset += len(df) + 1
+
+    plot_block(df_iocs_agg, "#ff2b2b", "Top IOCs")
+    plot_block(df_pcaps_agg, "#ff6b6b", "Top Source IPs")
+    plot_block(df_vulns_agg, "#ffffff", "Vulnerabilities")
+
+    plt.title("Unified Network Threat Activity", fontsize=16, color="white")
+    plt.ylabel("Observed Count", color="white")
+    plt.legend()
     plt.tight_layout()
+
     plt.savefig(output_path, dpi=200)
     plt.close()
+
+    print(f"[+] Unified network chart written to {output_path}")
 
