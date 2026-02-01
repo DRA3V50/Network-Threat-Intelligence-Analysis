@@ -1,61 +1,42 @@
-name: NTIA Pipeline
+name: Network Threat Intelligence Pipeline
 
 on:
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
-  schedule:
-    # Twice daily (EST-safe via UTC)
-    - cron: "0 14 * * *"
-    - cron: "0 2 * * *"
-
-permissions:
-  contents: write
 
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
 
     steps:
-      # 🔴 CRITICAL FIX — prevents github-actions[bot] auth takeover
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          persist-credentials: false
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install pandas matplotlib seaborn
 
-      - name: Run threat intelligence pipeline
+      - name: Run pipeline
         run: |
           python -m src.run
 
-      - name: Update README snapshot
+      # ✅ SAFE cleanup (NO outputs reference)
+      - name: Ensure build directory exists
         run: |
-          python src/scripts/update_readme.py
+          mkdir -p build/charts
 
-      - name: Commit and push changes
-        env:
-          NTIA_TOKEN: ${{ secrets.NTIA_KEY }}
+      - name: Commit generated artifacts
         run: |
-          set -e
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
 
-          git config user.name "github-actions"
-          git config user.email "github-actions@users.noreply.github.com"
-
-          # Only commit if there are actual changes
-          if git diff --quiet; then
-            echo "No changes to commit."
-            exit 0
-          fi
-
-          git add build outputs README.md
-          git commit -m "Automated update: pipeline outputs + README"
-
-          git push https://x-access-token:${NTIA_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:main
-
+          git add build README.md || true
+          git commit -m "Automated update: pipeline outputs + README" || echo "Nothing to commit"
+          git push || true
