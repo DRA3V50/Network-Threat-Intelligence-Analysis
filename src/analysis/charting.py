@@ -12,31 +12,31 @@ def generate_unified_network_chart(
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     # =========================
-    # LOAD DATA SAFELY
+    # LOAD DATA
     # =========================
     df_iocs = pd.read_csv(iocs_csv)
     df_pcaps = pd.read_csv(pcaps_csv)
     df_vulns = pd.read_csv(vulns_csv)
 
     # =========================
-    # NORMALIZE IOC DATA
+    # IOC AGGREGATION
     # =========================
-    # Detect usable columns automatically
-    ioc_value_col = next(
+    ioc_col = next(
         (c for c in df_iocs.columns if "ioc" in c.lower() or "indicator" in c.lower()),
         df_iocs.columns[0],
     )
 
     df_iocs_agg = (
-        df_iocs[ioc_value_col]
+        df_iocs[ioc_col]
+        .astype(str)
         .value_counts()
         .head(10)
         .reset_index()
-        .rename(columns={"index": "label", ioc_value_col: "count"})
     )
+    df_iocs_agg.columns = ["label", "count"]
 
     # =========================
-    # NORMALIZE PCAP DATA
+    # PCAP AGGREGATION
     # =========================
     src_col = next(
         (c for c in df_pcaps.columns if "source" in c.lower()),
@@ -45,14 +45,15 @@ def generate_unified_network_chart(
 
     df_pcaps_agg = (
         df_pcaps[src_col]
+        .astype(str)
         .value_counts()
         .head(10)
         .reset_index()
-        .rename(columns={"index": "label", src_col: "count"})
     )
+    df_pcaps_agg.columns = ["label", "count"]
 
     # =========================
-    # NORMALIZE VULN DATA
+    # VULNERABILITY AGGREGATION
     # =========================
     sev_col = next(
         (c for c in df_vulns.columns if "severity" in c.lower()),
@@ -61,32 +62,41 @@ def generate_unified_network_chart(
 
     df_vulns_agg = (
         df_vulns[sev_col]
+        .astype(str)
         .value_counts()
         .reset_index()
-        .rename(columns={"index": "label", sev_col: "count"})
     )
+    df_vulns_agg.columns = ["label", "count"]
 
     # =========================
-    # PLOT (RESIDENT EVIL STYLE)
+    # PLOTTING
     # =========================
-    plt.figure(figsize=(14, 8))
+    plt.figure(figsize=(16, 8))
     plt.style.use("dark_background")
 
-    x_offset = 0
+    current_x = 0
+    xtick_positions = []
+    xtick_labels = []
 
     def plot_block(df, color, title):
-        nonlocal x_offset
-        xs = range(x_offset, x_offset + len(df))
-        plt.bar(xs, df["count"], color=color, label=title)
-        plt.xticks(xs, df["label"], rotation=45, ha="right", fontsize=8)
-        x_offset += len(df) + 1
+        nonlocal current_x
+        xs = list(range(current_x, current_x + len(df)))
+        ys = df["count"].values.tolist()
+
+        plt.bar(xs, ys, color=color, label=title)
+
+        xtick_positions.extend(xs)
+        xtick_labels.extend(df["label"].tolist())
+
+        current_x += len(df) + 1  # spacing gap
 
     plot_block(df_iocs_agg, "#ff2b2b", "Top IOCs")
     plot_block(df_pcaps_agg, "#ff6b6b", "Top Source IPs")
     plot_block(df_vulns_agg, "#ffffff", "Vulnerabilities")
 
-    plt.title("Unified Network Threat Activity", fontsize=16, color="white")
-    plt.ylabel("Observed Count", color="white")
+    plt.xticks(xtick_positions, xtick_labels, rotation=45, ha="right", fontsize=8)
+    plt.ylabel("Observed Count")
+    plt.title("Unified Network Threat Activity")
     plt.legend()
     plt.tight_layout()
 
@@ -94,4 +104,3 @@ def generate_unified_network_chart(
     plt.close()
 
     print(f"[+] Unified network chart written to {output_path}")
-
