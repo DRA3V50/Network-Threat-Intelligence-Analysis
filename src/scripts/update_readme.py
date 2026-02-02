@@ -11,86 +11,73 @@ CHART = Path("build/charts/network_activity.png")
 START = "<!-- AUTO-GENERATED-START -->"
 END = "<!-- AUTO-GENERATED-END -->"
 
+IOC_ROWS = 10
+VULN_ROWS = 10
 
-def table(df, max_rows=15):
-    """
-    Limit table size for readability in README while
-    preserving full datasets in build artifacts.
-    """
-    if len(df) > max_rows:
-        df = df.head(max_rows)
+
+def render_table(df, sort_col, rows):
+    df = df.sort_values(sort_col, ascending=False)
+    df = df.head(rows)
     return df.to_markdown(index=False)
 
 
-def generate_readme():
+def update_readme():
     iocs_df = pd.read_csv(IOCS)
     vulns_df = pd.read_csv(VULNS)
 
-    generated_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
     block = f"""
 {START}
 
-## 📌 Automated Threat Intelligence Snapshot
+## 📌 Daily Threat Intelligence Snapshot
 
-**Last Generated:** {generated_time}  
-**Update Cadence:** Automated (multiple daily executions via CI pipeline)
+**Generated:** {timestamp}  
+**Execution:** Automated CI pipeline (multiple daily runs)
 
-This section is automatically generated from the latest pipeline outputs.
-All data is derived from simulated sources and is intended for research,
-demonstration, and portfolio purposes only.
-
----
-
-### 🛰️ High-Confidence Threat Indicators (IOCs)
-
-Curated indicators aggregated from open-source intelligence feeds and
-confidence-scored during ingestion.
-
-> Displaying most recent indicators (truncated for readability)
-
-{table(iocs_df)}
+This section is regenerated automatically from pipeline outputs.  
+Displayed tables are **curated summaries** — full datasets are preserved
+in build artifacts for analysis and auditing.
 
 ---
 
-### 🔥 Highest-Risk Vulnerabilities
+### 🛰️ High-Confidence Threat Indicators (Top {IOC_ROWS})
 
-Vulnerabilities prioritized based on relative severity, exploitability,
-and potential operational impact.
+Ranked by confidence score.
 
-> Displaying highest-severity findings (truncated for readability)
-
-{table(vulns_df)}
+{render_table(iocs_df, "confidence", IOC_ROWS)}
 
 ---
 
-### 📊 Unified Network Activity Visualization
+### 🔥 Highest-Risk Vulnerabilities (Top {VULN_ROWS})
 
-This visualization correlates:
-- Observed network source activity (PCAP analysis)
+Ranked by calculated risk score.
+
+{render_table(vulns_df, "risk_score", VULN_ROWS)}
+
+---
+
+### 📊 Correlated Network Threat Activity
+
+The visualization below correlates:
+- Network source activity
 - Vulnerability severity distribution
 - High-confidence IOC prevalence
 
-The chart is regenerated automatically from the tables above.
-
-![Unified Network Activity Overview]({CHART.as_posix()})
+![Unified Network Threat Activity]({CHART.as_posix()})
 
 {END}
 """
 
-    existing = README.read_text() if README.exists() else ""
+    text = README.read_text()
 
-    if START in existing and END in existing:
-        updated = (
-            existing.split(START)[0]
-            + block
-            + existing.split(END)[1]
-        )
+    if START in text and END in text:
+        text = text.split(START)[0] + block + text.split(END)[1]
     else:
-        updated = existing + "\n\n" + block
+        text += "\n\n" + block
 
-    README.write_text(updated)
+    README.write_text(text)
 
 
 if __name__ == "__main__":
-    generate_readme()
+    update_readme()
