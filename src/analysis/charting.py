@@ -2,13 +2,14 @@ from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# -------------------------------------------------------------------
-# Paths
-# -------------------------------------------------------------------
-CHART_DIR = Path("build/charts")
-CHART_DIR.mkdir(parents=True, exist_ok=True)
 
-OUTPUT_CHART = CHART_DIR / "network_activity.png"
+# -------------------------------------------------------------------
+# Defaults
+# -------------------------------------------------------------------
+DEFAULT_CHART_DIR = Path("build/charts")
+DEFAULT_CHART_DIR.mkdir(parents=True, exist_ok=True)
+
+DEFAULT_OUTPUT = DEFAULT_CHART_DIR / "network_activity.png"
 
 
 # -------------------------------------------------------------------
@@ -19,48 +20,56 @@ def generate_unified_network_chart(
     pcaps_csv: Path = None,
     iocs_csv: Path = None,
     vulns_csv: Path = None,
+    output_path: Path = None,
+    **kwargs,   # <-- absorbs any future args safely
 ):
     """
-    Generates a SOC-grade network activity visualization.
+    SOC-grade network activity visualization.
 
-    Accepts multiple CSV argument names to remain pipeline-compatible.
+    This function is intentionally signature-flexible to prevent
+    pipeline breakage as orchestration evolves.
     """
 
     # ---------------------------
-    # Resolve input source
+    # Resolve CSV input
     # ---------------------------
     csv_path = network_csv or pcaps_csv
-
     if csv_path is None:
-        raise ValueError("No network/pcap CSV provided to chart generator")
+        raise ValueError("No network / PCAP CSV provided")
 
     # ---------------------------
-    # Load network data
+    # Resolve output path
+    # ---------------------------
+    output = output_path or DEFAULT_OUTPUT
+    output = Path(output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    # ---------------------------
+    # Load & sanitize data
     # ---------------------------
     df = pd.read_csv(csv_path)
 
-    # Defensive typing
+    if "count" not in df.columns or "source_ip" not in df.columns:
+        raise ValueError("Expected columns: source_ip, count")
+
     df["count"] = pd.to_numeric(df["count"], errors="coerce").fillna(0)
     df = df.sort_values("count", ascending=False).head(10)
 
     # ---------------------------
-    # Styling (serious, restrained)
+    # Styling — restrained, clinical
     # ---------------------------
     plt.style.use("dark_background")
 
     fig, ax = plt.subplots(figsize=(12, 6))
-    fig.patch.set_facecolor("#0e0e0e")
-    ax.set_facecolor("#121212")
+    fig.patch.set_facecolor("#0d0d0d")
+    ax.set_facecolor("#111111")
 
-    # ---------------------------
-    # Bar chart
-    # ---------------------------
     bars = ax.bar(
         df["source_ip"],
         df["count"],
-        color="#b11226",      # restrained Umbrella red
+        color="#b11226",        # Umbrella red (subtle)
         edgecolor="#7a0c19",
-        linewidth=0.8
+        linewidth=0.9
     )
 
     # ---------------------------
@@ -122,9 +131,7 @@ def generate_unified_network_chart(
     # Save chart
     # ---------------------------
     plt.tight_layout()
-    plt.savefig(OUTPUT_CHART, dpi=150)
+    plt.savefig(output, dpi=150)
     plt.close()
 
-    print(f"[+] Network activity chart written to {OUTPUT_CHART}")
-
-
+    print(f"[+] Network activity chart written to {output}")
