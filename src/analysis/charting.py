@@ -1,157 +1,102 @@
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
+
+# -------------------------------------------------------------------
+# Paths
+# -------------------------------------------------------------------
+BUILD_DIR = Path("build/charts")
+BUILD_DIR.mkdir(parents=True, exist_ok=True)
+
+OUTPUT_CHART = BUILD_DIR / "network_activity.png"
 
 
-SEVERITY_MAP = {
-    "low": 3,
-    "medium": 6,
-    "high": 8,
-    "critical": 10,
-}
+# -------------------------------------------------------------------
+# Unified Network Activity Chart
+# -------------------------------------------------------------------
+def generate_unified_network_chart(df_network, df_iocs=None, df_vulns=None):
+    """
+    Generates a SOC-grade network activity visualization.
+    Theme: Dark, clinical, high-contrast (Umbrella / RE-inspired).
+    """
 
+    # ---------------------------
+    # Defensive casting (CRITICAL)
+    # ---------------------------
+    df = df_network.copy()
+    df["count"] = pd.to_numeric(df["count"], errors="coerce").fillna(0)
 
-def normalize_severity(val):
-    if isinstance(val, (int, float)):
-        return val
-    if not isinstance(val, str):
-        return 0
-    return SEVERITY_MAP.get(val.lower().strip(), 0)
+    df = df.sort_values("count", ascending=False).head(10)
 
+    # ---------------------------
+    # Style configuration
+    # ---------------------------
+    plt.style.use("dark_background")
 
-def generate_unified_network_chart(
-    iocs_csv: Path,
-    vulns_csv: Path,
-    pcaps_csv: Path,
-    output_path: Path,
-    top_n: int = 10,
-):
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # -------------------------
-    # Load data
-    # -------------------------
-    df_iocs = pd.read_csv(iocs_csv)
-    df_vulns = pd.read_csv(vulns_csv)
-    df_pcaps = pd.read_csv(pcaps_csv)
-
-    # -------------------------
-    # IOCs
-    # -------------------------
-    ioc_value_col = next(c for c in df_iocs.columns if "value" in c.lower())
-    ioc_conf_col = next(c for c in df_iocs.columns if "confidence" in c.lower())
-
-    df_iocs = (
-        df_iocs[[ioc_value_col, ioc_conf_col]]
-        .rename(columns={ioc_value_col: "label", ioc_conf_col: "score"})
-    )
-
-    df_iocs["score"] = pd.to_numeric(df_iocs["score"], errors="coerce").fillna(0)
-
-    df_iocs = df_iocs.sort_values("score", ascending=False).head(top_n)
-
-    # -------------------------
-    # Vulnerabilities (FIXED)
-    # -------------------------
-    vuln_name_col = next(
-        c for c in df_vulns.columns if "vuln" in c.lower() or "cve" in c.lower()
-    )
-    vuln_sev_col = next(c for c in df_vulns.columns if "severity" in c.lower())
-
-    df_vulns = (
-        df_vulns[[vuln_name_col, vuln_sev_col]]
-        .rename(columns={vuln_name_col: "label", vuln_sev_col: "score"})
-    )
-
-    df_vulns["score"] = df_vulns["score"].apply(normalize_severity)
-
-    df_vulns = df_vulns.sort_values("score", ascending=False).head(top_n)
-
-    # -------------------------
-    # PCAP Source IPs
-    # -------------------------
-    src_ip_col = next(c for c in df_pcaps.columns if "ip" in c.lower())
-    count_col = next(c for c in df_pcaps.columns if "count" in c.lower())
-
-    df_pcaps = (
-        df_pcaps[[src_ip_col, count_col]]
-        .rename(columns={src_ip_col: "label", count_col: "score"})
-    )
-
-    df_pcaps["score"] = pd.to_numeric(df_pcaps["score"], errors="coerce").fillna(0)
-    df_pcaps = df_pcaps.sort_values("score", ascending=False).head(top_n)
-
-    # -------------------------
-    # Plot
-    # -------------------------
-    fig, ax = plt.subplots(figsize=(20, 9))
-    fig.patch.set_facecolor("#121212")
+    fig, ax = plt.subplots(figsize=(12, 6))
+    fig.patch.set_facecolor("#0e0e0e")
     ax.set_facecolor("#121212")
 
-    x_cursor = 0
-    gap = 2
-
-    def plot_block(df, color, title):
-        nonlocal x_cursor
-
-        x_vals = np.arange(len(df)) + x_cursor
-        scores = df["score"].astype(float).values
-
-        ax.bar(x_vals, scores, color=color, alpha=0.9)
-
-        ax.text(
-            x_vals.mean(),
-            max(scores) * 1.08 if len(scores) else 0,
-            title,
-            ha="center",
-            va="bottom",
-            fontsize=12,
-            fontweight="bold",
-            color="white",
-        )
-
-        for x, label in zip(x_vals, df["label"]):
-            ax.text(
-                x,
-                -max(scores) * 0.06 if len(scores) else 0,
-                str(label),
-                rotation=45,
-                ha="right",
-                va="top",
-                fontsize=8,
-                color="white",
-            )
-
-        x_cursor = x_vals[-1] + gap + 1 if len(x_vals) else x_cursor
-
-    # -------------------------
-    # Draw blocks (ORIGINAL STYLE)
-    # -------------------------
-    plot_block(df_pcaps, "#ff4d4d", "Top Source IPs")
-    plot_block(df_vulns, "#ff9933", "Top Vulnerabilities")
-    plot_block(df_iocs, "#b84cff", "High-Confidence IOCs")
-
-    # -------------------------
-    # Styling
-    # -------------------------
-    ax.set_title(
-        "Comprehensive Network Threat Activity Overview",
-        fontsize=16,
-        fontweight="bold",
-        color="white",
-        pad=20,
+    # ---------------------------
+    # Bar chart
+    # ---------------------------
+    bars = ax.bar(
+        df["source_ip"],
+        df["count"],
+        color="#b11226",        # Umbrella red (muted)
+        edgecolor="#7a0c19",
+        linewidth=0.8
     )
 
-    ax.set_ylabel("Event Count / Severity / Confidence", color="white")
-    ax.set_xticks([])
+    # ---------------------------
+    # Labels & title
+    # ---------------------------
+    ax.set_title(
+        "Network Threat Activity Overview",
+        fontsize=14,
+        color="#e6e6e6",
+        pad=14
+    )
 
-    ax.tick_params(colors="white")
-    for spine in ax.spines.values():
-        spine.set_color("#444")
+    ax.set_xlabel("Source IP Address", fontsize=10, color="#cfcfcf", labelpad=8)
+    ax.set_ylabel("Observed Connection Volume", fontsize=10, color="#cfcfcf", labelpad=8)
 
+    # ---------------------------
+    # Grid & ticks
+    # ---------------------------
+    ax.tick_params(axis="x", colors="#cfcfcf", rotation=30)
+    ax.tick_params(axis="y", colors="#cfcfcf")
+
+    ax.grid(
+        axis="y",
+        linestyle="--",
+        linewidth=0.4,
+        color="#2a2a2a",
+        alpha=0.6
+    )
+
+    # ---------------------------
+    # Subtle data labels (not noisy)
+    # ---------------------------
+    max_val = df["count"].max()
+
+    for bar in bars:
+        height = bar.get_height()
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            height + max_val * 0.02,
+            f"{int(height)}",
+            ha="center",
+            va="bottom",
+            fontsize=9,
+            color="#d9d9d9"
+        )
+
+    # ---------------------------
+    # Layout & save
+    # ---------------------------
     plt.tight_layout()
-    plt.savefig(output_path, dpi=300, facecolor=fig.get_facecolor())
+    plt.savefig(OUTPUT_CHART, dpi=150)
     plt.close()
 
-    print(f"[+] Unified network chart written to {output_path}")
+    print(f"[+] Network activity chart written to {OUTPUT_CHART}")
