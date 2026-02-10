@@ -1,99 +1,136 @@
+from pathlib import Path
+from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
-from pathlib import Path
 
-def generate_threat_chart():
-    base = Path("outputs")
+# ---------------- PATHS ----------------
+ROOT = Path(".")
+README = ROOT / "README.md"
 
-    pcap_path = base / "pcap_summary.csv"
-    ioc_path  = base / "ioc_summary.csv"
-    vuln_path = base / "vuln_summary.csv"
-    chart_out = base / "network_threat_chart.png"
+IOCS = ROOT / "build/iocs/osint_iocs.csv"
+VULNS = ROOT / "build/vulnerabilities/vuln_scan_sample.csv"
+PCAPS = ROOT / "build/pcaps/top_source_ips.csv"
 
-    # -----------------------
-    # Load tables
-    # -----------------------
-    pcap = pd.read_csv(pcap_path)
-    ioc  = pd.read_csv(ioc_path)
-    vuln = pd.read_csv(vuln_path)
+CHART_DIR = ROOT / "build/charts"
+CHART_DIR.mkdir(parents=True, exist_ok=True)
+CHART_PATH = CHART_DIR / "network_activity.png"
 
-    pcap.columns = pcap.columns.str.lower()
-    ioc.columns  = ioc.columns.str.lower()
-    vuln.columns = vuln.columns.str.lower()
+START = "<!-- AUTO-GENERATED-START -->"
+END = "<!-- AUTO-GENERATED-END -->"
 
-    # -----------------------
-    # Base per-IP frame
-    # -----------------------
-    df = pcap.rename(columns={"source_ip": "ip"})
-    df["A_pcap"] = df["count"]
+# ---------------- HELPERS ----------------
+def table(df, limit=8):
+    return df.head(limit).to_markdown(index=False)
 
-    # -----------------------
-    # IOC score per IP
-    # -----------------------
-    if "indicator" in ioc.columns:
-        ioc_ip = (
-            ioc.groupby("indicator")["confidence"]
-            .max()
-            .reset_index()
-            .rename(columns={"indicator": "ip", "confidence": "B_ioc"})
-        )
-        df = df.merge(ioc_ip, on="ip", how="left")
-    else:
-        df["B_ioc"] = 0
 
-    df["B_ioc"] = df["B_ioc"].fillna(0)
+# ---------------- CHART ----------------
+def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
+    """
+    Generates a weighted threat dominance chart:
+    - IOCs: 90%
+    - Vulnerabilities: 5%
+    - Network activity: 5%
+    """
 
-    # -----------------------
-    # Vuln score per IP
-    # -----------------------
-    severity_weight = {
-        "LOW": 1,
-        "MEDIUM": 3,
-        "HIGH": 6,
-        "CRITICAL": 10
+    # --- Aggregate values ---
+    ioc_score = iocs_df["confidence"].mean()
+    vuln_score = vulns_df["risk_score"].mean()
+    net_score = pcaps_df["count"].sum()
+
+    # Normalize
+    net_score = min(net_score * 2, 100)
+
+    weighted = {
+        "Threat Intelligence (IOCs)": ioc_score * 0.90,
+        "Vulnerability Exposure": vuln_score * 0.05,
+        "Network Activity": net_score * 0.05,
     }
 
-    if "host" in vuln.columns:
-        vuln["sev"] = vuln["severity"].map(severity_weight)
-        vuln_ip = (
-            vuln.groupby("host")["sev"]
-            .max()
-            .reset_index()
-            .rename(columns={"host": "ip", "sev": "C_vuln"})
-        )
-        df = df.merge(vuln_ip, on="ip", how="left")
-    else:
-        df["C_vuln"] = 0
+    labels = list(weighted.keys())
+    values = list(weighted.values())
 
-    df["C_vuln"] = df["C_vuln"].fillna(0)
+    # ---------------- STYLE ----------------
+    plt.figure(figsize=(12, 6))
+    plt.style.use("dark_background")
 
-    # -----------------------
-    # FINAL WEIGHTED SCORE
-    # A = 90%
-    # B = 5%
-    # C = 5%
-    # -----------------------
-    df["final_score"] = (
-        df["A_pcap"] * 0.90 +
-        df["B_ioc"]  * 0.05 +
-        df["C_vuln"] * 0.05
+    bars = plt.bar(
+        labels,
+        values,
+        width=0.55
     )
 
-    df = df.sort_values("final_score", ascending=False)
+    # Clinical red / amber / muted white
+    colors = ["#b11226", "#d98c1f", "#aaaaaa"]
+    for bar, color in zip(bars, colors):
+        bar.set_color(color)
 
-    # -----------------------
-    # Chart (clean, readable)
-    # -----------------------
-    plt.figure(figsize=(14, 6))
-    plt.bar(df["ip"], df["final_score"])
-    plt.xticks(rotation=45, ha="right")
-    plt.title("Network Threat Severity (A=90%, B=5%, C=5%)")
-    plt.xlabel("Source IP")
-    plt.ylabel("Weighted Threat Score")
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,
+            height + 1,
+            f"{height:.1f}",
+            ha="center",
+            va="bottom",
+            fontsize=11
+        )
+
+    plt.title("Composite Network Threat Posture", fontsize=15, pad=14)
+    plt.ylabel("Weighted Threat Contribution")
+    plt.ylim(0, 100)
+    plt.grid(axis="y", linestyle="--", alpha=0.25)
+
     plt.tight_layout()
-
-    chart_out.parent.mkdir(exist_ok=True)
-    plt.savefig(chart_out)
+    plt.savefig(CHART_PATH, dpi=160)
     plt.close()
 
-    print("[+] Threat chart regenerated from tables")
+
+# ---------------- README ----------------
+def update_readme():
+    iocs_df = pd.read_csv(IOCS).sort_values("confidence", ascending=False)
+    vulns_df = pd.read_csv(VULNS).sort_values("risk_score", ascending=False)
+    pcaps_df = pd.read_csv(PCAPS).sort_values("count", ascending=False)
+
+    generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df)
+
+    block = f"""
+{START}
+
+## 📌 Daily Threat Intelligence Snapshot
+**Generated (UTC):** {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}
+
+### 🛰️ High-Confidence Threat Indicators
+Top indicators prioritized by confidence and relevance.
+
+{table(iocs_df)}
+
+### 🔥 Highest-Risk Vulnerabilities
+Vulnerabilities ranked by calculated operational risk.
+
+{table(vulns_df)}
+
+### 📊 Composite Network Threat Posture
+Weighted threat dominance derived from intelligence correlation.
+
+![Network Threat Activity](build/charts/network_activity.png)
+
+**Weighting Model**
+- Threat Intelligence (IOCs): **90%**
+- Vulnerability Exposure: **5%**
+- Network Activity: **5%**
+
+{END}
+"""
+
+    text = README.read_text() if README.exists() else ""
+    if START in text and END in text:
+        text = text.split(START)[0] + block + text.split(END)[1]
+    else:
+        text += "\n" + block
+
+    README.write_text(text)
+
+
+if __name__ == "__main__":
+    print("🔥 update_readme.py EXECUTING 🔥")
+    update_readme()
