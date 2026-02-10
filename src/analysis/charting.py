@@ -5,27 +5,34 @@ import matplotlib.pyplot as plt
 # -------------------------------------------------------------------
 # Paths
 # -------------------------------------------------------------------
-BUILD_DIR = Path("build/charts")
-BUILD_DIR.mkdir(parents=True, exist_ok=True)
+CHART_DIR = Path("build/charts")
+CHART_DIR.mkdir(parents=True, exist_ok=True)
 
-OUTPUT_CHART = BUILD_DIR / "network_activity.png"
+OUTPUT_CHART = CHART_DIR / "network_activity.png"
 
 
 # -------------------------------------------------------------------
 # Unified Network Activity Chart
 # -------------------------------------------------------------------
-def generate_unified_network_chart(df_network, df_iocs=None, df_vulns=None):
+def generate_unified_network_chart(
+    network_csv: Path,
+    iocs_csv: Path = None,
+    vulns_csv: Path = None
+):
     """
     Generates a SOC-grade network activity visualization.
-    Theme: Dark, clinical, high-contrast (Umbrella / RE-inspired).
+
+    Accepts CSV paths to remain compatible with the pipeline.
+    IOC and vulnerability inputs are optional and reserved for future correlation.
     """
 
     # ---------------------------
-    # Defensive casting (CRITICAL)
+    # Load network data
     # ---------------------------
-    df = df_network.copy()
-    df["count"] = pd.to_numeric(df["count"], errors="coerce").fillna(0)
+    df = pd.read_csv(network_csv)
 
+    # Defensive casting (CRITICAL)
+    df["count"] = pd.to_numeric(df["count"], errors="coerce").fillna(0)
     df = df.sort_values("count", ascending=False).head(10)
 
     # ---------------------------
@@ -43,13 +50,13 @@ def generate_unified_network_chart(df_network, df_iocs=None, df_vulns=None):
     bars = ax.bar(
         df["source_ip"],
         df["count"],
-        color="#b11226",        # Umbrella red (muted)
+        color="#b11226",        # restrained Umbrella-red
         edgecolor="#7a0c19",
         linewidth=0.8
     )
 
     # ---------------------------
-    # Labels & title
+    # Titles & labels
     # ---------------------------
     ax.set_title(
         "Network Threat Activity Overview",
@@ -58,8 +65,19 @@ def generate_unified_network_chart(df_network, df_iocs=None, df_vulns=None):
         pad=14
     )
 
-    ax.set_xlabel("Source IP Address", fontsize=10, color="#cfcfcf", labelpad=8)
-    ax.set_ylabel("Observed Connection Volume", fontsize=10, color="#cfcfcf", labelpad=8)
+    ax.set_xlabel(
+        "Source IP Address",
+        fontsize=10,
+        color="#cfcfcf",
+        labelpad=8
+    )
+
+    ax.set_ylabel(
+        "Observed Connection Volume",
+        fontsize=10,
+        color="#cfcfcf",
+        labelpad=8
+    )
 
     # ---------------------------
     # Grid & ticks
@@ -76,7 +94,7 @@ def generate_unified_network_chart(df_network, df_iocs=None, df_vulns=None):
     )
 
     # ---------------------------
-    # Subtle data labels (not noisy)
+    # Subtle data labels
     # ---------------------------
     max_val = df["count"].max()
 
@@ -93,10 +111,11 @@ def generate_unified_network_chart(df_network, df_iocs=None, df_vulns=None):
         )
 
     # ---------------------------
-    # Layout & save
+    # Save chart
     # ---------------------------
     plt.tight_layout()
     plt.savefig(OUTPUT_CHART, dpi=150)
     plt.close()
 
     print(f"[+] Network activity chart written to {OUTPUT_CHART}")
+
