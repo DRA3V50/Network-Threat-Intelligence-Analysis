@@ -15,28 +15,36 @@ OUTPUT_CHART = CHART_DIR / "network_activity.png"
 # Unified Network Activity Chart
 # -------------------------------------------------------------------
 def generate_unified_network_chart(
-    network_csv: Path,
+    network_csv: Path = None,
+    pcaps_csv: Path = None,
     iocs_csv: Path = None,
-    vulns_csv: Path = None
+    vulns_csv: Path = None,
 ):
     """
     Generates a SOC-grade network activity visualization.
 
-    Accepts CSV paths to remain compatible with the pipeline.
-    IOC and vulnerability inputs are optional and reserved for future correlation.
+    Accepts multiple CSV argument names to remain pipeline-compatible.
     """
+
+    # ---------------------------
+    # Resolve input source
+    # ---------------------------
+    csv_path = network_csv or pcaps_csv
+
+    if csv_path is None:
+        raise ValueError("No network/pcap CSV provided to chart generator")
 
     # ---------------------------
     # Load network data
     # ---------------------------
-    df = pd.read_csv(network_csv)
+    df = pd.read_csv(csv_path)
 
-    # Defensive casting (CRITICAL)
+    # Defensive typing
     df["count"] = pd.to_numeric(df["count"], errors="coerce").fillna(0)
     df = df.sort_values("count", ascending=False).head(10)
 
     # ---------------------------
-    # Style configuration
+    # Styling (serious, restrained)
     # ---------------------------
     plt.style.use("dark_background")
 
@@ -50,7 +58,7 @@ def generate_unified_network_chart(
     bars = ax.bar(
         df["source_ip"],
         df["count"],
-        color="#b11226",        # restrained Umbrella-red
+        color="#b11226",      # restrained Umbrella red
         edgecolor="#7a0c19",
         linewidth=0.8
     )
@@ -94,7 +102,7 @@ def generate_unified_network_chart(
     )
 
     # ---------------------------
-    # Subtle data labels
+    # Value labels
     # ---------------------------
     max_val = df["count"].max()
 
@@ -118,4 +126,5 @@ def generate_unified_network_chart(
     plt.close()
 
     print(f"[+] Network activity chart written to {OUTPUT_CHART}")
+
 
