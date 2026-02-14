@@ -52,6 +52,50 @@ def normalize_vulnerabilities(vulns_df):
     # fallback
     vulns_df["risk_score"] = 0
     return vulns_df
+    
+   #---------------------------
+
+def correlate_sources(iocs_df, vulns_df, pcaps_df):
+
+    # Normalize column names
+    iocs_df.columns = iocs_df.columns.str.lower()
+    vulns_df.columns = vulns_df.columns.str.lower()
+    pcaps_df.columns = pcaps_df.columns.str.lower()
+
+    correlated = []
+
+    # Ensure required columns exist
+    if "ip" not in iocs_df.columns:
+        return pd.DataFrame()
+
+    if "source_ip" not in pcaps_df.columns:
+        return pd.DataFrame()
+
+    # Merge IOC IPs with network source IPs
+    merged = pcaps_df.merge(
+        iocs_df,
+        left_on="source_ip",
+        right_on="ip",
+        how="inner"
+    )
+
+    if merged.empty:
+        return pd.DataFrame()
+
+    # Calculate amplified risk score
+    merged["correlated_risk"] = (
+        merged.get("confidence", 0) * 0.7 +
+        merged.get("count", 0) * 0.3
+    )
+
+    merged = merged.sort_values("correlated_risk", ascending=False)
+
+    return merged[[
+        "source_ip",
+        "confidence",
+        "count",
+        "correlated_risk"
+    ]]
 
 
 # ---------------------------
@@ -59,39 +103,107 @@ def normalize_vulnerabilities(vulns_df):
 # ---------------------------
 def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
 
-    ioc_score = iocs_df["confidence"].mean() if "confidence" in iocs_df.columns else 0
-    vuln_score = vulns_df["risk_score"].mean() if "risk_score" in vulns_df.columns else 0
-    net_score = pcaps_df["count"].sum() if "count" in pcaps_df.columns else 0
+    # Normalize column names
+    iocs_df.columns = iocs_df.columns.str.lower()
+    vulns_df.columns = vulns_df.columns.str.lower()
+    pcaps_df.columns = pcaps_df.columns.str.lower()
 
+    # ---------------------------
+    # Safe metric extraction
+    # ---------------------------
+    ioc_score = (
+        float(iocs_df["confidence"].mean())
+        if "confidence" in iocs_df.columns and not iocs_df.empty
+        else 0
+    )
+
+    vuln_score = (
+        float(vulns_df["risk_score"].mean())
+        if "risk_score" in vulns_df.columns and not vulns_df.empty
+        else 0
+    )
+
+    net_score = (
+        float(pcaps_df["count"].sum())
+        if "count" in pcaps_df.columns and not pcaps_df.empty
+        else 0
+    )
+
+    # Normalize network contribution
     net_score = min(net_score * 2, 100)
 
-    ioc_weighted = round(ioc_score * 0.90, 1)
+    # ---------------------------
+    # Correlation boost (real intelligence logic)
+    # ---------------------------
+    correlation_boost = 0
+    if (
+        "ip" in iocs_df.columns and
+        "source_ip" in pcaps_df.columns
+    ):
+        merged = pcaps_df.merge(
+            iocs_df,
+            left_on="source_ip",
+            right_on="ip",
+            how="inner"
+        )
+
+        if not merged.empty:
+            correlation_boost = min(
+                float(merged["confidence"].mean()) * 0.25,
+                20
+            )
+
+    # ---------------------------
+    # Weighted calculation
+    # ---------------------------
+    ioc_weighted = round((ioc_score * 0.90) + correlation_boost, 1)
     vuln_weighted = round(vuln_score * 0.05, 1)
     net_weighted = round(net_score * 0.05, 1)
 
-    labels = ["Threat Intelligence", "Vulnerability Exposure", "Network Activity"]
+    labels = [
+        "Threat Intelligence",
+        "Vulnerability Exposure",
+        "Network Activity"
+    ]
+
     values = [ioc_weighted, vuln_weighted, net_weighted]
 
+    # Prevent flat zero chart
+    max_val = max(values) if max(values) > 0 else 10
+
+    # ---------------------------
+    # Plot styling
+    # ---------------------------
     fig, ax = plt.subplots(figsize=(10, 5))
 
-    # FBI-grade background
     fig.patch.set_facecolor("#0B1118")
     ax.set_facecolor("#0B1118")
 
     colors = ["#7A0C0C", "#8C5A0A", "#4B4F54"]
 
-    bars = ax.bar(labels, values, width=0.45, color=colors)
+    bars = ax.bar(
+        labels,
+        values,
+        width=0.42,
+        color=colors,
+        edgecolor="#1F2A36",
+        linewidth=1.1
+    )
 
-    # Tight grid
+    # Subtle grid
     ax.yaxis.grid(True, linestyle="-", linewidth=0.6, color="#1F2A36")
     ax.set_axisbelow(True)
 
-    # Precise numeric coordinates above bars
+    # Y-axis ticks visible (analyst clarity)
+    ax.tick_params(axis="y", colors="#C9D1D9")
+    ax.tick_params(axis="x", colors="#C9D1D9")
+
+    # Precise numeric coordinates
     for bar in bars:
         height = bar.get_height()
         ax.text(
             bar.get_x() + bar.get_width() / 2,
-            height + 1.2,
+            height + (max_val * 0.03),
             f"{height:.1f}",
             ha="center",
             va="bottom",
@@ -108,15 +220,21 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
         fontweight="bold"
     )
 
-    ax.set_ylabel("Weighted Threat Contribution", color="#C9D1D9")
+    ax.set_ylabel(
+        "Weighted Threat Contribution",
+        color="#C9D1D9"
+    )
 
-    ax.tick_params(colors="#C9D1D9")
-
-    ax.set_ylim(0, max(values) + 10)
+    ax.set_ylim(0, max_val * 1.15)
 
     plt.tight_layout()
-    plt.savefig(CHART_PATH, dpi=200, facecolor=fig.get_facecolor())
+    plt.savefig(
+        CHART_PATH,
+        dpi=200,
+        facecolor=fig.get_facecolor()
+    )
     plt.close()
+
 
 
 # ---------------------------
