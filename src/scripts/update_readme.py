@@ -63,7 +63,6 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
     vuln_score = vulns_df["risk_score"].mean() if "risk_score" in vulns_df.columns else 0
     net_score = pcaps_df["count"].sum() if "count" in pcaps_df.columns else 0
 
-    # Normalize network contribution
     net_score = min(net_score * 2, 100)
 
     # Apply weights
@@ -71,34 +70,40 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
     vuln_weighted = vuln_score * 0.05
     net_weighted = net_score * 0.05
 
-    values = [ioc_weighted, vuln_weighted, net_weighted]
-    labels = ["Threat Intelligence", "Vulnerabilities", "Network Activity"]
-    colors = ["#b11226", "#d98c1f", "#888888"]
+    total = ioc_weighted + vuln_weighted + net_weighted
+    if total == 0:
+        total = 1  # prevent division by zero
 
-    plt.figure(figsize=(12, 3))
+    proportions = [
+        ioc_weighted / total,
+        vuln_weighted / total,
+        net_weighted / total
+    ]
+
+    colors = ["#9e1b1b", "#c47a1f", "#777777"]
+
+    plt.figure(figsize=(10, 1.8))
     plt.style.use("dark_background")
 
     left = 0
-    for value, color, label in zip(values, colors, labels):
+    for proportion, color in zip(proportions, colors):
         plt.barh(
             y=0,
-            width=value,
+            width=proportion,
             left=left,
             color=color,
-            height=0.6,
-            label=f"{label} ({value:.1f})"
+            height=0.35
         )
-        left += value
+        left += proportion
 
-    plt.xlim(0, 100)
+    plt.xlim(0, 1)
     plt.yticks([])
-    plt.xlabel("Composite Threat Contribution (Weighted)")
-    plt.title("Composite Network Threat Posture", pad=10)
+    plt.xticks([])
 
-    plt.legend(loc="upper right", frameon=False)
+    plt.title("Composite Network Threat Posture", pad=6, fontsize=11)
 
     plt.tight_layout()
-    plt.savefig(CHART_PATH, dpi=160)
+    plt.savefig(CHART_PATH, dpi=200)
     plt.close()
 
 
