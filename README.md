@@ -212,3 +212,41 @@ Prioritized based on exploitability and potential operational impact.
 
 - All data is **simulated for research, demonstration purposes, education, and portfolio projects**
 - No live production environments are monitored
+
+
+<!-- AUTO-GENERATED-START -->
+
+## 📌 Daily Threat Intelligence Snapshot
+**Generated (UTC):** 2026-02-14 02:35
+
+### 🛰️ High-Confidence Threat Indicators
+| ioc_value                | ioc_type   |   confidence |
+|:-------------------------|:-----------|-------------:|
+| malicious.com            | hash       |           94 |
+| badactor.net             | domain     |           90 |
+| 2ddbdd712c056f34bd0aa2cc | ip         |           89 |
+| 193.42.157.198           | ip         |           85 |
+| malwaredrop.org          | ip         |           82 |
+| 185.82.113.99            | ip         |           77 |
+| 185.81.68.90             | ip         |           74 |
+| 185.83.60.186            | domain     |           72 |
+
+### 🔥 Highest-Risk Vulnerabilities
+| vulnerability   | severity   |   severity_score |   risk_score |
+|:----------------|:-----------|-----------------:|-------------:|
+| CVE-2024-3011   | Critical   |                9 |          100 |
+| CVE-2023-2198   | High       |                7 |           75 |
+| CVE-2022-4421   | Medium     |                5 |           50 |
+| CVE-2020-1195   | Medium     |                5 |           50 |
+| CVE-2021-3375   | Low        |                3 |           25 |
+
+### 📊 Composite Network Threat Posture
+
+![Network Threat Activity](build/charts/network_activity.png)
+
+**Weighting Model**
+- Threat Intelligence (IOCs): 90%
+- Vulnerability Exposure: 5%
+- Network Activity: 5%
+
+<!-- AUTO-GENERATED-END -->
