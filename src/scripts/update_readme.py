@@ -101,6 +101,9 @@ def correlate_sources(iocs_df, vulns_df, pcaps_df):
 # ---------------------------
 # Chart Generation
 # ---------------------------
+# ---------------------------
+# Chart Generation
+# ---------------------------
 def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
 
     # Normalize column names
@@ -133,13 +136,10 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
     net_score = min(net_score * 2, 100)
 
     # ---------------------------
-    # Correlation boost (real intelligence logic)
+    # Correlation boost (IOC seen in traffic)
     # ---------------------------
     correlation_boost = 0
-    if (
-        "ip" in iocs_df.columns and
-        "source_ip" in pcaps_df.columns
-    ):
+    if "ip" in iocs_df.columns and "source_ip" in pcaps_df.columns:
         merged = pcaps_df.merge(
             iocs_df,
             left_on="source_ip",
@@ -147,7 +147,7 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
             how="inner"
         )
 
-        if not merged.empty:
+        if not merged.empty and "confidence" in merged.columns:
             correlation_boost = min(
                 float(merged["confidence"].mean()) * 0.25,
                 20
@@ -160,16 +160,28 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
     vuln_weighted = round(vuln_score * 0.05, 1)
     net_weighted = round(net_score * 0.05, 1)
 
-    labels = [
-        "Threat Intelligence",
-        "Vulnerability Exposure",
-        "Network Activity"
-    ]
-
     values = [ioc_weighted, vuln_weighted, net_weighted]
 
-    # Prevent flat zero chart
+    # Prevent flat chart
     max_val = max(values) if max(values) > 0 else 10
+
+    # ---------------------------
+    # Composite Risk Score
+    # ---------------------------
+    composite_score = round(sum(values), 1)
+
+    if composite_score < 25:
+        risk_tier = "LOW"
+        tier_color = "#2E8B57"
+    elif composite_score < 50:
+        risk_tier = "MODERATE"
+        tier_color = "#C47A1F"
+    elif composite_score < 75:
+        risk_tier = "HIGH"
+        tier_color = "#B22222"
+    else:
+        risk_tier = "CRITICAL"
+        tier_color = "#FF2E2E"
 
     # ---------------------------
     # Plot styling
@@ -178,6 +190,12 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
 
     fig.patch.set_facecolor("#0B1118")
     ax.set_facecolor("#0B1118")
+
+    labels = [
+        "Threat Intelligence",
+        "Vulnerability Exposure",
+        "Network Activity"
+    ]
 
     colors = ["#7A0C0C", "#8C5A0A", "#4B4F54"]
 
@@ -190,15 +208,14 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
         linewidth=1.1
     )
 
-    # Subtle grid
+    # Subtle analyst grid
     ax.yaxis.grid(True, linestyle="-", linewidth=0.6, color="#1F2A36")
     ax.set_axisbelow(True)
 
-    # Y-axis ticks visible (analyst clarity)
     ax.tick_params(axis="y", colors="#C9D1D9")
     ax.tick_params(axis="x", colors="#C9D1D9")
 
-    # Precise numeric coordinates
+    # Numeric coordinates above bars
     for bar in bars:
         height = bar.get_height()
         ax.text(
@@ -212,11 +229,25 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
             fontweight="bold"
         )
 
+    # Title
     ax.set_title(
         "Composite Network Threat Posture",
         fontsize=14,
         color="#C9D1D9",
-        pad=12,
+        pad=20,
+        fontweight="bold"
+    )
+
+    # Risk Tier Subtitle
+    ax.text(
+        0.5,
+        1.04,
+        f"Risk Tier: {risk_tier}  |  Composite Score: {composite_score}",
+        transform=ax.transAxes,
+        ha="center",
+        va="bottom",
+        fontsize=12,
+        color=tier_color,
         fontweight="bold"
     )
 
