@@ -3,7 +3,6 @@ from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# ---------------- PATHS ----------------
 ROOT = Path(".")
 README = ROOT / "README.md"
 
@@ -18,26 +17,53 @@ CHART_PATH = CHART_DIR / "network_activity.png"
 START = "<!-- AUTO-GENERATED-START -->"
 END = "<!-- AUTO-GENERATED-END -->"
 
-# ---------------- HELPERS ----------------
+
 def table(df, limit=8):
     return df.head(limit).to_markdown(index=False)
 
 
-# ---------------- CHART ----------------
+# ---------------------------
+# Vulnerability Risk Handling
+# ---------------------------
+def normalize_vulnerabilities(vulns_df):
+    vulns_df.columns = vulns_df.columns.str.lower()
+
+    if "risk_score" in vulns_df.columns:
+        return vulns_df
+
+    if "severity" in vulns_df.columns:
+        severity_map = {
+            "LOW": 25,
+            "MEDIUM": 50,
+            "HIGH": 75,
+            "CRITICAL": 100
+        }
+
+        vulns_df["risk_score"] = (
+            vulns_df["severity"]
+            .astype(str)
+            .str.upper()
+            .map(severity_map)
+            .fillna(0)
+        )
+
+        return vulns_df
+
+    # fallback
+    vulns_df["risk_score"] = 0
+    return vulns_df
+
+
+# ---------------------------
+# Chart Generation
+# ---------------------------
 def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
-    """
-    Generates a weighted threat dominance chart:
-    - IOCs: 90%
-    - Vulnerabilities: 5%
-    - Network activity: 5%
-    """
 
-    # --- Aggregate values ---
-    ioc_score = iocs_df["confidence"].mean()
-    vuln_score = vulns_df["risk_score"].mean()
-    net_score = pcaps_df["count"].sum()
+    ioc_score = iocs_df["confidence"].mean() if "confidence" in iocs_df.columns else 0
+    vuln_score = vulns_df["risk_score"].mean() if "risk_score" in vulns_df.columns else 0
+    net_score = pcaps_df["count"].sum() if "count" in pcaps_df.columns else 0
 
-    # Normalize
+    # Normalize network impact
     net_score = min(net_score * 2, 100)
 
     weighted = {
@@ -49,17 +75,11 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
     labels = list(weighted.keys())
     values = list(weighted.values())
 
-    # ---------------- STYLE ----------------
     plt.figure(figsize=(12, 6))
     plt.style.use("dark_background")
 
-    bars = plt.bar(
-        labels,
-        values,
-        width=0.55
-    )
+    bars = plt.bar(labels, values, width=0.55)
 
-    # Clinical red / amber / muted white
     colors = ["#b11226", "#d98c1f", "#aaaaaa"]
     for bar, color in zip(bars, colors):
         bar.set_color(color)
@@ -85,11 +105,19 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
     plt.close()
 
 
-# ---------------- README ----------------
+# ---------------------------
+# README Update
+# ---------------------------
 def update_readme():
+
+    print("🔥 update_readme.py EXECUTING 🔥")
+
     iocs_df = pd.read_csv(IOCS).sort_values("confidence", ascending=False)
-    vulns_df = pd.read_csv(VULNS).sort_values("risk_score", ascending=False)
+    vulns_df = pd.read_csv(VULNS)
     pcaps_df = pd.read_csv(PCAPS).sort_values("count", ascending=False)
+
+    vulns_df = normalize_vulnerabilities(vulns_df)
+    vulns_df = vulns_df.sort_values("risk_score", ascending=False)
 
     generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df)
 
@@ -100,24 +128,19 @@ def update_readme():
 **Generated (UTC):** {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}
 
 ### 🛰️ High-Confidence Threat Indicators
-Top indicators prioritized by confidence and relevance.
-
 {table(iocs_df)}
 
 ### 🔥 Highest-Risk Vulnerabilities
-Vulnerabilities ranked by calculated operational risk.
-
 {table(vulns_df)}
 
 ### 📊 Composite Network Threat Posture
-Weighted threat dominance derived from intelligence correlation.
 
 ![Network Threat Activity](build/charts/network_activity.png)
 
 **Weighting Model**
-- Threat Intelligence (IOCs): **90%**
-- Vulnerability Exposure: **5%**
-- Network Activity: **5%**
+- Threat Intelligence (IOCs): 90%
+- Vulnerability Exposure: 5%
+- Network Activity: 5%
 
 {END}
 """
@@ -132,6 +155,4 @@ Weighted threat dominance derived from intelligence correlation.
 
 
 if __name__ == "__main__":
-    print("🔥 update_readme.py EXECUTING 🔥")
     update_readme()
-
