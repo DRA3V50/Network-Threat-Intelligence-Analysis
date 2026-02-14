@@ -63,42 +63,39 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
     vuln_score = vulns_df["risk_score"].mean() if "risk_score" in vulns_df.columns else 0
     net_score = pcaps_df["count"].sum() if "count" in pcaps_df.columns else 0
 
-    # Normalize network impact
+    # Normalize network contribution
     net_score = min(net_score * 2, 100)
 
-    weighted = {
-        "Threat Intelligence (IOCs)": ioc_score * 0.90,
-        "Vulnerability Exposure": vuln_score * 0.05,
-        "Network Activity": net_score * 0.05,
-    }
+    # Apply weights
+    ioc_weighted = ioc_score * 0.90
+    vuln_weighted = vuln_score * 0.05
+    net_weighted = net_score * 0.05
 
-    labels = list(weighted.keys())
-    values = list(weighted.values())
+    values = [ioc_weighted, vuln_weighted, net_weighted]
+    labels = ["Threat Intelligence", "Vulnerabilities", "Network Activity"]
+    colors = ["#b11226", "#d98c1f", "#888888"]
 
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(12, 3))
     plt.style.use("dark_background")
 
-    bars = plt.bar(labels, values, width=0.55)
-
-    colors = ["#b11226", "#d98c1f", "#aaaaaa"]
-    for bar, color in zip(bars, colors):
-        bar.set_color(color)
-
-    for bar in bars:
-        height = bar.get_height()
-        plt.text(
-            bar.get_x() + bar.get_width() / 2,
-            height + 1,
-            f"{height:.1f}",
-            ha="center",
-            va="bottom",
-            fontsize=11
+    left = 0
+    for value, color, label in zip(values, colors, labels):
+        plt.barh(
+            y=0,
+            width=value,
+            left=left,
+            color=color,
+            height=0.6,
+            label=f"{label} ({value:.1f})"
         )
+        left += value
 
-    plt.title("Composite Network Threat Posture", fontsize=15, pad=14)
-    plt.ylabel("Weighted Threat Contribution")
-    plt.ylim(0, 100)
-    plt.grid(axis="y", linestyle="--", alpha=0.25)
+    plt.xlim(0, 100)
+    plt.yticks([])
+    plt.xlabel("Composite Threat Contribution (Weighted)")
+    plt.title("Composite Network Threat Posture", pad=10)
+
+    plt.legend(loc="upper right", frameon=False)
 
     plt.tight_layout()
     plt.savefig(CHART_PATH, dpi=160)
