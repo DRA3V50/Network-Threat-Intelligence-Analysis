@@ -65,45 +65,57 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
 
     net_score = min(net_score * 2, 100)
 
-    # Apply weights
-    ioc_weighted = ioc_score * 0.90
-    vuln_weighted = vuln_score * 0.05
-    net_weighted = net_score * 0.05
+    ioc_weighted = round(ioc_score * 0.90, 1)
+    vuln_weighted = round(vuln_score * 0.05, 1)
+    net_weighted = round(net_score * 0.05, 1)
 
-    total = ioc_weighted + vuln_weighted + net_weighted
-    if total == 0:
-        total = 1  # prevent division by zero
+    labels = ["Threat Intelligence", "Vulnerability Exposure", "Network Activity"]
+    values = [ioc_weighted, vuln_weighted, net_weighted]
 
-    proportions = [
-        ioc_weighted / total,
-        vuln_weighted / total,
-        net_weighted / total
-    ]
+    fig, ax = plt.subplots(figsize=(10, 5))
 
-    colors = ["#9e1b1b", "#c47a1f", "#777777"]
+    # FBI-grade background
+    fig.patch.set_facecolor("#0B1118")
+    ax.set_facecolor("#0B1118")
 
-    plt.figure(figsize=(10, 1.8))
-    plt.style.use("dark_background")
+    colors = ["#7A0C0C", "#8C5A0A", "#4B4F54"]
 
-    left = 0
-    for proportion, color in zip(proportions, colors):
-        plt.barh(
-            y=0,
-            width=proportion,
-            left=left,
-            color=color,
-            height=0.35
+    bars = ax.bar(labels, values, width=0.45, color=colors)
+
+    # Tight grid
+    ax.yaxis.grid(True, linestyle="-", linewidth=0.6, color="#1F2A36")
+    ax.set_axisbelow(True)
+
+    # Precise numeric coordinates above bars
+    for bar in bars:
+        height = bar.get_height()
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            height + 1.2,
+            f"{height:.1f}",
+            ha="center",
+            va="bottom",
+            fontsize=11,
+            color="#C9D1D9",
+            fontweight="bold"
         )
-        left += proportion
 
-    plt.xlim(0, 1)
-    plt.yticks([])
-    plt.xticks([])
+    ax.set_title(
+        "Composite Network Threat Posture",
+        fontsize=14,
+        color="#C9D1D9",
+        pad=12,
+        fontweight="bold"
+    )
 
-    plt.title("Composite Network Threat Posture", pad=6, fontsize=11)
+    ax.set_ylabel("Weighted Threat Contribution", color="#C9D1D9")
+
+    ax.tick_params(colors="#C9D1D9")
+
+    ax.set_ylim(0, max(values) + 10)
 
     plt.tight_layout()
-    plt.savefig(CHART_PATH, dpi=200)
+    plt.savefig(CHART_PATH, dpi=200, facecolor=fig.get_facecolor())
     plt.close()
 
 
