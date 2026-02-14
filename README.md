@@ -95,22 +95,23 @@ Elevated activity may indicate:
 
 
 
+
 <!-- AUTO-GENERATED-START -->
 
 ## 📌 Daily Threat Intelligence Snapshot
-**Generated (UTC):** 2026-02-14 03:40
+**Generated (UTC):** 2026-02-14 04:41
 
 ### 🛰️ High-Confidence Threat Indicators
 | ioc_value                | ioc_type   |   confidence |
 |:-------------------------|:-----------|-------------:|
-| 2ddbdd712c056f34bd0aa2cc | ip         |           92 |
+| badactor.net             | domain     |           91 |
 | 185.81.68.90             | domain     |           87 |
-| 193.42.157.198           | ip         |           83 |
-| 185.82.113.99            | ip         |           83 |
-| malwaredrop.org          | hash       |           80 |
-| 185.83.60.186            | ip         |           77 |
-| badactor.net             | ip         |           74 |
-| malicious.com            | domain     |           71 |
+| 185.82.113.99            | domain     |           80 |
+| 2ddbdd712c056f34bd0aa2cc | ip         |           80 |
+| 193.42.157.198           | ip         |           79 |
+| malicious.com            | ip         |           78 |
+| 185.83.60.186            | hash       |           76 |
+| malwaredrop.org          | domain     |           70 |
 
 ### 🔥 Highest-Risk Vulnerabilities
 | vulnerability   | severity   |   severity_score |   risk_score |
@@ -131,6 +132,7 @@ Elevated activity may indicate:
 - Network Activity: 5%
 
 <!-- AUTO-GENERATED-END -->
+
 
 
 
