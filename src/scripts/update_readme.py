@@ -229,7 +229,6 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
     # Clean Title + Risk Tier Layout
     # ---------------------------
 
-
     # Risk Tier subtitle (placed cleanly above chart)
     fig.text(
         0.5,
@@ -265,6 +264,9 @@ def update_readme():
 
     print("🔥 update_readme.py EXECUTING 🔥")
 
+    from datetime import datetime
+    import pandas as pd
+
     iocs_df = pd.read_csv(IOCS).sort_values("confidence", ascending=False)
     vulns_df = pd.read_csv(VULNS)
     pcaps_df = pd.read_csv(PCAPS).sort_values("count", ascending=False)
@@ -272,25 +274,54 @@ def update_readme():
     vulns_df = normalize_vulnerabilities(vulns_df)
     vulns_df = vulns_df.sort_values("risk_score", ascending=False)
 
+    # Generate charts (DO NOT remove)
     generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df)
+    generate_protocol_distribution_chart(pcaps_df)   # <- second chart (different)
 
     block = f"""
 {START}
 
-## 📌 Daily Threat Intelligence Snapshot
+## Operational Threat Intelligence Report
 **Generated (UTC):** {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}
 
-### 🛰️ High-Confidence Threat Indicators
+---
+
+### High-Confidence Indicators of Compromise
 {table(iocs_df)}
 
-### 🔥 Highest-Risk Vulnerabilities
+---
+
+### Critical Vulnerability Exposure
 {table(vulns_df)}
 
-### 📊 Composite Network Threat Posture
+---
 
-![Network Threat Activity](build/charts/network_activity.png)
+## Composite Threat Risk Assessment
 
-weight_section = f"""
+![Composite Threat Risk](build/charts/composite_threat.png)
+
+---
+
+## Network Traffic Protocol Distribution
+
+![Protocol Distribution](build/charts/protocol_distribution.png)
+
+{END}
+"""
+
+    with open(README, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    updated = content.replace(
+        content[content.find(START):content.find(END) + len(END)],
+        block
+    )
+
+    with open(README, "w", encoding="utf-8") as f:
+        f.write(updated)
+
+    print("✅ README successfully updated.")
+
 ## Risk Weighting Model
 
 Threat Intelligence (IOCs): {int(weights["ioc"] * 100)}%  
