@@ -290,13 +290,14 @@ def update_readme():
 
 ![Network Threat Activity](build/charts/network_activity.png)
 
-**Weighting Model**
-- Threat Intelligence (IOCs): 90%
-- Vulnerability Exposure: 5%
-- Network Activity: 5%
+weight_section = f"""
+## Risk Weighting Model
 
-{END}
+Threat Intelligence (IOCs): {int(weights["ioc"] * 100)}%  
+Vulnerability Exposure: {int(weights["vulnerability"] * 100)}%  
+Network Activity Monitoring: {int(weights["network"] * 100)}%
 """
+
 
     text = README.read_text() if README.exists() else ""
     if START in text and END in text:
