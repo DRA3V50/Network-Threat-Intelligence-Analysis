@@ -1,26 +1,47 @@
-import csv
-import os
+import pandas as pd
 
-def score_vulnerabilities(matches, vuln_path="build/vulnerabilities/vuln_scan_sample.csv"):
+
+# Dynamic weighting model
+WEIGHTS = {
+    "ioc": 0.60,
+    "vulnerability": 0.25,
+    "network": 0.15
+}
+
+
+def calculate_scores(ioc_count, vuln_df, traffic_df):
     """
-    Simple risk scoring function.
-    Writes high-risk vulnerabilities CSV in outputs/logs
+    Dynamically compute weighted threat posture
     """
-    os.makedirs("outputs/logs", exist_ok=True)
 
-    high_risk = []
+    # IOC Score (scale based on count)
+    ioc_score = min(ioc_count * 2, 100)
 
-    with open(vuln_path, newline='') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            severity = int(row.get("Severity", 0))
-            vuln_name = row.get("Vulnerability", "Unknown")
-            if severity >= 7 or any(vuln_name in m for m in matches):
-                high_risk.append(row)
+    # Vulnerability Exposure Score
+    if vuln_df is not None and not vuln_df.empty:
+        high = vuln_df[vuln_df["severity"] == "High"].shape[0]
+        critical = vuln_df[vuln_df["severity"] == "Critical"].shape[0]
+        vuln_score = min((high * 5 + critical * 10), 100)
+    else:
+        vuln_score = 0
 
-    with open("outputs/logs/high_risk_vulns.csv", "w", newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=reader.fieldnames)
-        writer.writeheader()
-        writer.writerows(high_risk)
+    # Network Activity Score
+    if traffic_df is not None and not traffic_df.empty:
+        suspicious = traffic_df[traffic_df["flagged"] == True].shape[0]
+        network_score = min(suspicious * 3, 100)
+    else:
+        network_score = 0
 
-    print(f"[+] Risk scoring complete: {len(high_risk)} high-risk items")
+    composite_score = (
+        ioc_score * WEIGHTS["ioc"] +
+        vuln_score * WEIGHTS["vulnerability"] +
+        network_score * WEIGHTS["network"]
+    )
+
+    return {
+        "ioc_score": round(ioc_score, 2),
+        "vuln_score": round(vuln_score, 2),
+        "network_score": round(network_score, 2),
+        "composite_score": round(composite_score, 2),
+        "weights": WEIGHTS
+    }
