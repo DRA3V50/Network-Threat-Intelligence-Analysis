@@ -97,10 +97,6 @@ def correlate_sources(iocs_df, vulns_df, pcaps_df):
         "correlated_risk"
     ]]
 
-
-# ---------------------------
-# Chart Generation
-# ---------------------------
 # ---------------------------
 # Chart Generation
 # ---------------------------
@@ -229,23 +225,25 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
             fontweight="bold"
         )
 
-    # Title
-    ax.set_title(
+    # ---------------------------
+    # Clean Title + Risk Tier Layout
+    # ---------------------------
+
+    # Main title
+    fig.suptitle(
         "Composite Network Threat Posture",
-        fontsize=14,
+        fontsize=15,
         color="#C9D1D9",
-        pad=20,
-        fontweight="bold"
+        fontweight="bold",
+        y=0.96
     )
 
-    # Risk Tier Subtitle
-    ax.text(
+    # Risk Tier subtitle (placed cleanly above chart)
+    fig.text(
         0.5,
-        1.04,
+        0.91,
         f"Risk Tier: {risk_tier}  |  Composite Score: {composite_score}",
-        transform=ax.transAxes,
         ha="center",
-        va="bottom",
         fontsize=12,
         color=tier_color,
         fontweight="bold"
@@ -258,7 +256,7 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
 
     ax.set_ylim(0, max_val * 1.15)
 
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0, 1, 0.88])
     plt.savefig(
         CHART_PATH,
         dpi=200,
