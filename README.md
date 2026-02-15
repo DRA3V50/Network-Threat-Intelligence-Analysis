@@ -101,24 +101,29 @@ Elevated activity may indicate:
 
 
 
+
 <!-- AUTO-GENERATED-START -->
 
-## 📌 Daily Threat Intelligence Snapshot
-**Generated (UTC):** 2026-02-15 01:25
+## Operational Threat Intelligence Report
+**Generated (UTC):** 2026-02-15 02:27
 
-### 🛰️ High-Confidence Threat Indicators
+---
+
+### High-Confidence Indicators of Compromise
 | ioc_value                | ioc_type   |   confidence |
 |:-------------------------|:-----------|-------------:|
-| malwaredrop.org          | hash       |           93 |
-| 193.42.157.198           | domain     |           92 |
-| badactor.net             | hash       |           88 |
-| 185.81.68.90             | hash       |           83 |
-| 185.82.113.99            | ip         |           81 |
-| 2ddbdd712c056f34bd0aa2cc | ip         |           79 |
-| 185.83.60.186            | ip         |           77 |
-| malicious.com            | ip         |           70 |
+| malicious.com            | domain     |           90 |
+| 185.83.60.186            | ip         |           88 |
+| 193.42.157.198           | hash       |           85 |
+| malwaredrop.org          | domain     |           81 |
+| 185.82.113.99            | domain     |           77 |
+| badactor.net             | ip         |           74 |
+| 2ddbdd712c056f34bd0aa2cc | ip         |           74 |
+| 185.81.68.90             | domain     |           72 |
 
-### 🔥 Highest-Risk Vulnerabilities
+---
+
+### Critical Vulnerability Exposure
 | vulnerability   | severity   |   severity_score |   risk_score |
 |:----------------|:-----------|-----------------:|-------------:|
 | CVE-2024-3011   | Critical   |                9 |          100 |
@@ -127,16 +132,18 @@ Elevated activity may indicate:
 | CVE-2020-1195   | Medium     |                5 |           50 |
 | CVE-2021-3375   | Low        |                3 |           25 |
 
-### 📊 Composite Network Threat Posture
+---
 
-![Network Threat Activity](build/charts/network_activity.png)
+## Composite Threat Risk Assessment
+![Composite Threat Risk](build/charts/composite_threat.png)
 
-**Weighting Model**
-- Threat Intelligence (IOCs): 90%
-- Vulnerability Exposure: 5%
-- Network Activity: 5%
+---
+
+## Network Traffic Analysis
+![Network Traffic Analysis](build/charts/protocol_distribution.png)
 
 <!-- AUTO-GENERATED-END -->
+
 
 
 
