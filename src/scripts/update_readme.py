@@ -229,14 +229,6 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
     # Clean Title + Risk Tier Layout
     # ---------------------------
 
-    # Main title
-    fig.suptitle(
-        "Composite Network Threat Posture",
-        fontsize=15,
-        color="#C9D1D9",
-        fontweight="bold",
-        y=0.96
-    )
 
     # Risk Tier subtitle (placed cleanly above chart)
     fig.text(
