@@ -274,9 +274,9 @@ def update_readme():
     vulns_df = normalize_vulnerabilities(vulns_df)
     vulns_df = vulns_df.sort_values("risk_score", ascending=False)
 
-    # Generate charts (DO NOT remove)
+    # Generate charts
     generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df)
-    generate_protocol_distribution_chart(pcaps_df)   # <- second chart (different)
+    generate_protocol_distribution_chart(pcaps_df)
 
     block = f"""
 {START}
@@ -308,6 +308,23 @@ def update_readme():
 
 {END}
 """
+
+    with open(README, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    start_index = content.find(START)
+    end_index = content.find(END) + len(END)
+
+    if start_index != -1 and end_index != -1:
+        updated = content[:start_index] + block + content[end_index:]
+    else:
+        updated = content + "\n" + block
+
+    with open(README, "w", encoding="utf-8") as f:
+        f.write(updated)
+
+    print("✅ README successfully updated.")
+
 
     with open(README, "r", encoding="utf-8") as f:
         content = f.read()
