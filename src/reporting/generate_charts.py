@@ -1,31 +1,75 @@
-import os
-import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
+import os
 
-OUTPUT_DIR = "outputs/charts"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-def generate_top_ip_chart():
-    """
-    Generates a simple top-source IP chart.
-    """
-    # Example: read matched_iocs.csv for charting
-    data_file = "outputs/logs/matched_iocs.csv"
-    if not os.path.exists(data_file):
-        print("[!] No matched_iocs.csv found — skipping chart")
-        return
+CHART_DIR = "charts"
+os.makedirs(CHART_DIR, exist_ok=True)
 
-    df = pd.read_csv(data_file)
-    top_ips = df['IOC'].value_counts().head(10)
 
-    plt.figure(figsize=(8,6))
-    sns.barplot(x=top_ips.index, y=top_ips.values)
-    plt.xticks(rotation=45)
-    plt.ylabel("Count")
-    plt.xlabel("Top Source IPs")
-    plt.title("Top 10 Source IPs from IOCs")
+def generate_threat_posture_chart(scores):
+    fig, ax = plt.subplots(figsize=(8, 5))
+    fig.patch.set_facecolor("#0D1117")
+    ax.set_facecolor("#0D1117")
+
+    categories = [
+        "IOC Pressure",
+        "Vulnerability Surface",
+        "Suspicious Traffic"
+    ]
+
+    values = [
+        scores["ioc_score"],
+        scores["vuln_score"],
+        scores["network_score"]
+    ]
+
+    bars = ax.bar(categories, values)
+
+    ax.set_title(
+        "Operational Threat Exposure Index",
+        fontsize=14,
+        pad=18,
+        fontweight="bold"
+    )
+
+    ax.set_ylabel("Normalized Risk Contribution")
+
+    ax.set_ylim(0, 100)
+
+    for bar in bars:
+        height = bar.get_height()
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            height,
+            f"{height}",
+            ha="center",
+            va="bottom"
+        )
+
+    output_path = os.path.join(CHART_DIR, "threat_posture.png")
     plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, "top_source_ips.png"))
+    plt.savefig(output_path, dpi=200)
     plt.close()
-    print(f"[+] Chart generated at {OUTPUT_DIR}/top_source_ips.png")
+
+
+def generate_network_activity_chart(protocol_distribution):
+    fig, ax = plt.subplots(figsize=(8, 5))
+
+    protocols = list(protocol_distribution.keys())
+    counts = list(protocol_distribution.values())
+
+    ax.bar(protocols, counts)
+
+    ax.set_title(
+        "Observed Network Protocol Distribution",
+        fontsize=14,
+        pad=18,
+        fontweight="bold"
+    )
+
+    ax.set_ylabel("Packet Count")
+
+    output_path = os.path.join(CHART_DIR, "network_protocols.png")
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=200)
+    plt.close()
