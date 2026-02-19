@@ -114,24 +114,25 @@ Elevated activity may indicate:
 
 
 
+
 <!-- AUTO-GENERATED-START -->
 
 ## Operational Threat Intelligence Report
-**Generated (UTC):** 2026-02-18 19:48
+**Generated (UTC):** 2026-02-19 04:52
 
 ---
 
 ### High-Confidence Indicators of Compromise
 | ioc_value                | ioc_type   |   confidence |
 |:-------------------------|:-----------|-------------:|
-| 193.42.157.198           | domain     |           95 |
-| malwaredrop.org          | ip         |           92 |
-| malicious.com            | hash       |           85 |
-| 185.82.113.99            | domain     |           84 |
-| 185.83.60.186            | hash       |           83 |
-| 185.81.68.90             | domain     |           79 |
-| badactor.net             | domain     |           79 |
-| 2ddbdd712c056f34bd0aa2cc | domain     |           75 |
+| 185.83.60.186            | ip         |           95 |
+| 185.81.68.90             | domain     |           94 |
+| badactor.net             | ip         |           93 |
+| 2ddbdd712c056f34bd0aa2cc | domain     |           91 |
+| 185.82.113.99            | ip         |           88 |
+| 193.42.157.198           | hash       |           85 |
+| malwaredrop.org          | domain     |           84 |
+| malicious.com            | hash       |           76 |
 
 ---
 
@@ -155,6 +156,7 @@ Elevated activity may indicate:
 ![Network Traffic Analysis](build/charts/protocol_distribution.png)
 
 <!-- AUTO-GENERATED-END -->
+
 
 
 
