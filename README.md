@@ -116,7 +116,6 @@ Elevated activity may indicate:
 
 
 
-
 <!-- AUTO-GENERATED-START -->
 
 ## Operational Threat Intelligence Report
