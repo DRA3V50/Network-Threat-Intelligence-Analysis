@@ -1,6 +1,6 @@
 # Network Threat Intelligence Analysis
 
-⚠️ **Automated Network Threat Intelligence, OSINT Correlation, and Risk Prioritization**
+⚠️ **Automated Network Threat Intelligence, OSINT Correlation, and Risk Prioritization** ⚠️
 
 This repository implements an **automated defensive threat-intelligence pipeline** designed to simulate how a SOC ingests, enriches, correlates, and prioritizes security data from multiple sources.
 
