@@ -133,47 +133,54 @@ Elevated activity may indicate:
 
 
 
+
 <!-- AUTO-GENERATED-START -->
 
-## Operational Threat Intelligence Report
-**Generated (UTC):** 2026-02-25 03:06
+# Enterprise Security Intelligence Dashboard
+**Last Updated (UTC):** 2026-02-25 03:27
 
 ---
 
-### High-Confidence Indicators of Compromise
+## Threat Intelligence Overview
 | ioc_value                | ioc_type   |   confidence |
 |:-------------------------|:-----------|-------------:|
-| 185.81.68.90             | hash       |           94 |
-| malwaredrop.org          | hash       |           85 |
-| 185.83.60.186            | hash       |           80 |
-| 2ddbdd712c056f34bd0aa2cc | ip         |           76 |
-| 185.82.113.99            | ip         |           75 |
-| badactor.net             | domain     |           74 |
-| 193.42.157.198           | domain     |           74 |
-| malicious.com            | ip         |           70 |
+| malicious.com            | hash       |           85 |
+| 185.83.60.186            | domain     |           84 |
+| 185.82.113.99            | ip         |           82 |
+| badactor.net             | ip         |           80 |
+| malwaredrop.org          | ip         |           77 |
+| 185.81.68.90             | hash       |           76 |
+| 2ddbdd712c056f34bd0aa2cc | hash       |           74 |
+| 193.42.157.198           | domain     |           71 |
 
 ---
 
-### Critical Vulnerability Exposure
+## Vulnerability Exposure Analysis
 | vulnerability   | severity   |   severity_score |   risk_score |
 |:----------------|:-----------|-----------------:|-------------:|
 | CVE-2024-3011   | Critical   |                9 |          100 |
 | CVE-2023-2198   | High       |                7 |           75 |
 | CVE-2022-4421   | Medium     |                5 |           50 |
-| CVE-2020-1195   | Medium     |                5 |           50 |
 | CVE-2021-3375   | Low        |                3 |           25 |
+| CVE-2020-1195   | Medium     |                5 |           50 |
 
 ---
 
-## Composite Threat Risk Assessment
-![Composite Threat Risk](build/charts/composite_threat.png)
+## Enterprise Threat Posture
+![Composite Threat](build/charts/composite_threat.png)
 
 ---
 
-## Network Traffic Behavioral Analysis
+## Network Behavioral Risk Index
 ![Network Behavior](build/charts/network_behavior.png)
 
+---
+
+## Vulnerability Severity Distribution
+![Vulnerability Distribution](build/charts/vulnerability_distribution.png)
+
 <!-- AUTO-GENERATED-END -->
+
 
 
 
