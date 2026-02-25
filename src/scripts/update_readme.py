@@ -131,7 +131,7 @@ def generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df):
     plt.close()
 
 
-def generate_protocol_distribution_chart(pcaps_df):
+def generate_network_behavior_chart(pcaps_df):
 
     pcaps_df.columns = pcaps_df.columns.str.lower()
 
@@ -167,7 +167,7 @@ def update_readme():
     vulns_df = vulns_df.sort_values("risk_score", ascending=False)
 
     generate_weighted_threat_chart(iocs_df, vulns_df, pcaps_df)
-    generate_protocol_distribution_chart(pcaps_df)
+    generate_network_behavior_chart(pcaps_df)
 
     block = f"""
 {START}
